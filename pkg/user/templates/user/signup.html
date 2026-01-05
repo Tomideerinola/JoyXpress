@@ -1,10 +1,82 @@
-<!-- {% extends "base.html" %}
-
-{% block content %}
-<h1>This is the Signup Page</h1>
-
-{% endblock %} -->
-
 {% include "includes/header.html" %}
-<h1>This is the Signup Page</h1>
+<h1 class="text-center">This is the Signup Page</h1>
+<div>
+
+<h1>User Signup</h1>
+        <form method="POST" action="{{ url_for('bpuser.signup') }}">
+                        {{ form.hidden_tag() }}
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            {{ form.full_name.label(class="form-label") }}
+                            {{ form.full_name(class="form-control", placeholder="Enter your full name") }}
+                            {% for error in form.full_name.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control", placeholder="Enter your email") }}
+                            {% for error in form.email.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control", placeholder="Enter your phone number") }}
+                            {% for error in form.phone.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- City -->
+                        <div class="mb-3">
+                            {{ form.city.label(class="form-label") }}
+                            {{ form.city(class="form-control", placeholder="Enter your city") }}
+                            {% for error in form.city.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- State -->
+                        <div class="mb-3">
+                            {{ form.state.label(class="form-label") }}
+                            {{ form.state(class="form-control", placeholder="Enter your state") }}
+                            {% for error in form.state.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            {% for error in form.password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                            {% for error in form.confirm_password.errors %}
+                                <small class="text-danger">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-block") }}
+                        </div>
+
+                        <p class="text-center mt-3">
+                            Already have an account? <a href="">Login here</a>
+                        </p>
+                    </form>
+</div>
 {% include "includes/footer.html" %}
