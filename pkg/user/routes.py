@@ -1,9 +1,19 @@
 from flask import Blueprint, render_template, redirect, url_for, flash,jsonify,session, request
 from pkg.models import User
 from pkg.user import userobj
-from .form import SignupForm,LoginForm # import the form here
+from .form import SignupForm,LoginForm,ProfileForm # import the form here
 from werkzeug.security import generate_password_hash,check_password_hash
 from pkg.models import db,State,City, Shipment, ShipmentStatusHistory # SQLAlchemy instance
+
+@userobj.app_context_processor
+def inject_user():
+    user_id = session.get('useronline')
+    if user_id:
+        u = User.query.get(user_id)
+        return dict(u=u)
+    return dict(u=None)
+
+
 
 @userobj.get('/')
 def home():
@@ -76,6 +86,8 @@ def login():
 @userobj.route('/dashboard/')
 def dashboard():
     user_id = session.get('useronline')
+    tracking_id = request.args.get('tracking_id')
+
 
     if not user_id:
         flash("You must be logged in to access the dashboard.", "warning")
@@ -89,6 +101,8 @@ def dashboard():
 
     # Fetch all shipments for this user, most recent first
     shipments = Shipment.query.filter_by(user_id=user_id).order_by(Shipment.created_at.desc()).all()
+    shipment = Shipment.query.filter_by(tracking_number=tracking_id).first()
+
 
     # Calculate some stats
     total_shipments = len(shipments)
@@ -100,7 +114,7 @@ def dashboard():
         shipments=shipments,
         total_shipments=total_shipments,
         active_shipments=len(active_shipments),
-        user_id=user_id
+        user_id=user_id,shipment=shipment
     )
 
 
@@ -131,6 +145,9 @@ def logout():
 
 @userobj.route('/track-shipment')
 def track_shipment():
+    user_id = session.get('useronline')
+    u = User.query.get(user_id)
+
     tracking_id = request.args.get('tracking_id')
 
     if not tracking_id:
@@ -150,8 +167,49 @@ def track_shipment():
         return redirect(url_for('bpuser.dashboard'))
 
     return render_template(
-        'shipment/details.html',
+        'shipment/shipment_tracking.html',
         shipment=shipment,
-        title="Track Shipment"
+        title="Track Shipment",u=u
     )
 
+
+@userobj.route('/org/edit/profile/')
+def edit_profile():
+    proform=ProfileForm()
+    if session.get('useronline') != None:
+        udeets=User.query.get(session['useronline'])
+        proform.fullname.data=udeets.full_name #to display the email
+        proform.email.data=udeets.email #to display the email
+        proform.phone.data=udeets.phone #this is to display the phone munber
+        return render_template('user/edit_profile.html',proform=proform,udeets=udeets)
+    else:
+        flash('You must be logged in to view this page', category='warning')
+        return redirect(url_for('bpuser.login'))
+    
+
+
+@userobj.post('/update/profile/')
+def update_profile():
+    proform=ProfileForm()
+    if session.get('useronline') !=None:
+        udeets=User.query.get(session['useronline'])
+        if proform.validate_on_submit():
+            name=proform.fullname.data
+            phone=proform.phone.data
+            email=proform.email.data
+
+            # update db via orm
+            udeets.full_name=name
+            udeets.phone=phone
+            udeets.email=email
+            db.session.commit()
+            flash('Profile updated Successfully', category='success')
+            return redirect(url_for('bpuser.edit_profile'))
+        else:          
+            return render_template('user/edit_profile.html',proform=proform,udeets=udeets)
+    else:
+        flash('You must be logged in to view this page', category='errormsg')
+        return redirect(url_for('bpuser.login'))
+
+
+            

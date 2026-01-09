@@ -1,248 +1,228 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>JoyXpress - New Shipment</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="Create New Logistics Order" name="keywords">
-
-    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-
-<body>
+{% extends "user/dashboard.html" %}
+    {% block content %}
     <div class="container-fluid bg-dark">
-        </div>
-    <div class="container-fluid p-0">
-        </div>
-    <div class="container-fluid py-5">
-        <div class="container">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h1 class="display-4 text-primary">
-                        <i class="fa fa-box-open mr-2"></i> Create New Shipment
-                    </h1>
-                    <p class="lead text-muted">Enter the details for your package and destination.</p>
-                </div>
+    </div>
+<div class="container-fluid p-0">
+    </div>
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-5 text-primary text-center">
+                    <i class="fa fa-box-open mr-2"></i> Create New Shipment
+                </h1>
+                <p class="lead text-muted text-center">Enter the details for your package and destination.</p>
             </div>
+        </div>
 
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="card shadow border-0">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">Shipment Details</h4>
-                        </div>
-                        <div class="card-body">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Shipment Details</h4>
+                    </div>
+                    <div class="card-body">
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} text-center">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('bpshipment.new_shipment') }}" id="shipmentForm">
+                            {{ form.hidden_tag() }}
+
+                            <h5 class="mt-3 mb-3 text-secondary">Receiver Information</h5>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    {{ form.receiver_name.label(class_="font-weight-bold") }}
+                                    {{ form.receiver_name(class_="form-control", placeholder="e.g., Jane Doe") }}
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{ form.receiver_phone.label(class_="font-weight-bold") }}
+                                    {{ form.receiver_phone(class_="form-control", placeholder="e.g., +234 800 1234 567") }}
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <h5 class="mt-3 mb-3 text-secondary">Pickup Location</h5>
+                                    <div class="form-group">
+                                        {{ form.pickup_state.label(class_="font-weight-bold") }}
+                                        {{ form.pickup_state(class_="form-control", id="pickup_state") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.pickup_city.label(class_="font-weight-bold") }}
+                                        {{ form.pickup_city(class_="form-control", id="pickup_city") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.pickup_address.label(class_="font-weight-bold") }}
+                                        {{ form.pickup_address(class_="form-control", rows="3", placeholder="Street Address, House Number") }}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h5 class="mt-3 mb-3 text-secondary">Delivery Location</h5>
+                                    <div class="form-group">
+                                        {{ form.delivery_state.label(class_="font-weight-bold") }}
+                                        {{ form.delivery_state(class_="form-control", id="delivery_state") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.delivery_city.label(class_="font-weight-bold") }}
+                                        {{ form.delivery_city(class_="form-control", id="delivery_city") }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.delivery_address.label(class_="font-weight-bold") }}
+                                        {{ form.delivery_address(class_="form-control", rows="3", placeholder="Street Address, House Number") }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-3 mb-3 text-secondary">Package & Service</h5>
+                            <div class="form-row align-items-end">
+                                <div class="form-group col-md-4">
+                                    {{ form.package_weight.label(class_="font-weight-bold") }}
+                                    {{ form.package_weight(class_="form-control", placeholder="e.g., 2.5") }}
+                                </div>
+                                <div class="form-group col-md-4">
+                                    {{ form.delivery_type.label(class_="font-weight-bold") }}
+                                    {{ form.delivery_type(class_="form-control") }}
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <button type="button" class="btn btn-warning btn-block py-2" id="calculateBtn">
+                                        <i class="fa fa-calculator mr-1"></i> Calculate Rate
+                                    </button>
+                                </div>
+                            </div>
                             
-                            {% with messages = get_flashed_messages(with_categories=true) %}
-                                {% if messages %}
-                                    {% for category, message in messages %}
-                                        <div class="alert alert-{{ category }} text-center">{{ message }}</div>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
+                            <div class="alert alert-info mt-3 text-center" role="alert" id="rateDisplay" style="display: none;">
+                                <strong>Calculated Rate:</strong> <span id="finalRate">...</span> (Distance: <span id="finalDistance">...</span> km)
+                            </div>
+                            
+                            {{ form.distance_km(class_="form-control d-none", id="distance_km") }}
+                            {{ form.calculated_amount(class_="form-control d-none", id="calculated_amount") }}
 
-                            <form method="POST" action="{{ url_for('bpshipment.new_shipment') }}" id="shipmentForm">
-                                {{ form.hidden_tag() }}
+                            <hr class="my-4">
 
-                                <h5 class="mt-3 mb-3 text-secondary">Receiver Information</h5>
-                                <div class="form-row">
-                                    <div class="form-group col-md-6">
-                                        {{ form.receiver_name.label(class_="font-weight-bold") }}
-                                        {{ form.receiver_name(class_="form-control", placeholder="e.g., Jane Doe") }}
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        {{ form.receiver_phone.label(class_="font-weight-bold") }}
-                                        {{ form.receiver_phone(class_="form-control", placeholder="e.g., +234 800 1234 567") }}
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="col-md-6">
-                                        <h5 class="mt-3 mb-3 text-secondary">Pickup Location</h5>
-                                        <div class="form-group">
-                                            {{ form.pickup_state.label(class_="font-weight-bold") }}
-                                            {{ form.pickup_state(class_="form-control", id="pickup_state") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.pickup_city.label(class_="font-weight-bold") }}
-                                            {{ form.pickup_city(class_="form-control", id="pickup_city") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.pickup_address.label(class_="font-weight-bold") }}
-                                            {{ form.pickup_address(class_="form-control", rows="3", placeholder="Street Address, House Number") }}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <h5 class="mt-3 mb-3 text-secondary">Delivery Location</h5>
-                                        <div class="form-group">
-                                            {{ form.delivery_state.label(class_="font-weight-bold") }}
-                                            {{ form.delivery_state(class_="form-control", id="delivery_state") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.delivery_city.label(class_="font-weight-bold") }}
-                                            {{ form.delivery_city(class_="form-control", id="delivery_city") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.delivery_address.label(class_="font-weight-bold") }}
-                                            {{ form.delivery_address(class_="form-control", rows="3", placeholder="Street Address, House Number") }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <h5 class="mt-3 mb-3 text-secondary">Package & Service</h5>
-                                <div class="form-row align-items-end">
-                                    <div class="form-group col-md-4">
-                                        {{ form.package_weight.label(class_="font-weight-bold") }}
-                                        {{ form.package_weight(class_="form-control", placeholder="e.g., 2.5") }}
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        {{ form.delivery_type.label(class_="font-weight-bold") }}
-                                        {{ form.delivery_type(class_="form-control") }}
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <button type="button" class="btn btn-warning btn-block py-2" id="calculateBtn">
-                                            <i class="fa fa-calculator mr-1"></i> Calculate Rate
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="alert alert-info mt-3 text-center" role="alert" id="rateDisplay" style="display: none;">
-                                    <strong>Calculated Rate:</strong> <span id="finalRate">...</span> (Distance: <span id="finalDistance">...</span> km)
-                                </div>
-                                
-                                {{ form.distance_km(class_="form-control d-none", id="distance_km") }}
-                                {{ form.calculated_amount(class_="form-control d-none", id="calculated_amount") }}
-
-                                <hr class="my-4">
-
-                                <div class="form-group text-center">
-                                    {{ form.submit(class_="btn btn-primary btn-lg px-5") }}
-                                </div>
-                            </form>
-                        </div>
+                            <div class="form-group text-center">
+                                {{ form.submit(class_="btn btn-primary btn-lg px-5") }}
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-
         </div>
+
     </div>
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        $(document).ready(function() {
+</div>
+{%endblock%}
 
-            function loadCities(stateSelectId, citySelectId) {
-                const stateId = $(stateSelectId).val();
-                const citySelect = $(citySelectId);
-                
-                citySelect.empty();
-                
-                if (stateId && stateId !== '0') {
-                    citySelect.append('<option value="0">Loading...</option>');
-                    
-                    // Corrected API endpoint URL using 'bpshipment'
-                    const apiUrl = "{{ url_for('bpshipment.get_cities', state_id=0) }}".replace('0', stateId);
+{%block script%}
+<script>
+    $(document).ready(function() {
 
-                    $.getJSON(apiUrl, function(data) {
-                        citySelect.empty();
-                        citySelect.append('<option value="">Select City</option>');
-                        $.each(data, function(index, city) {
-                            citySelect.append('<option value="' + city.id + '">' + city.name + '</option>');
-                        });
-                    }).fail(function() {
-                        citySelect.empty();
-                        citySelect.append('<option value="">Error loading cities</option>');
-                    });
-                } else {
-                    citySelect.empty();
-                    citySelect.append('<option value="">Select State First</option>');
-                }
-            }
-
-            // Event handlers for state changes
-            $('#pickup_state').change(function() {
-                loadCities('#pickup_state', '#pickup_city');
-            });
-
-            $('#delivery_state').change(function() {
-                loadCities('#delivery_state', '#delivery_city');
-            });
+        function loadCities(stateSelectId, citySelectId) {
+            const stateId = $(stateSelectId).val();
+            const citySelect = $(citySelectId);
             
-            // --- Rate Calculation Placeholder Logic ---
-        // --- Rate Calculation Logic (Must match server) ---
-        $('#calculateBtn').click(function() {
-                const weight = parseFloat($('#package_weight').val());
-                const pickupCityId = $('#pickup_city').val();
-                const deliveryCityId = $('#delivery_city').val();
-                const deliveryType = $('#delivery_type').val();
+            citySelect.empty();
+            
+            if (stateId && stateId !== '0') {
+                citySelect.append('<option value="0">Loading...</option>');
                 
-                // Get State IDs (Needed to check inter/intra state)
-                const pickupStateId = $('#pickup_state').val();
-                const deliveryStateId = $('#delivery_state').val();
+                // Corrected API endpoint URL using 'bpshipment'
+                const apiUrl = "{{ url_for('bpshipment.get_cities', state_id=0) }}".replace('0', stateId);
 
-                if (weight > 0 && pickupCityId && deliveryCityId && deliveryType) {
-                    
-                    // 1. DEFINE RATES (MUST MATCH DATABASE SHIPPINGRATE TABLE EXACTLY)
-                    const rates = {
-                        // REPLACE THESE VALUES WITH YOUR REAL DATABASE VALUES
-                        'bike': {base: 1500.00, perKg: 50.00, distMult: 1.00},
-                        'van': {base: 3500.00, perKg: 150.00, distMult: 2.50},
-                        'bus': {base: 6000.00, perKg: 250.00, distMult: 4.00},
-                        // Add any other rate tiers you support (e.g., 'truck')
-                    };
+                $.getJSON(apiUrl, function(data) {
+                    citySelect.empty();
+                    citySelect.append('<option value="">Select City</option>');
+                    $.each(data, function(index, city) {
+                        citySelect.append('<option value="' + city.id + '">' + city.name + '</option>');
+                    });
+                }).fail(function() {
+                    citySelect.empty();
+                    citySelect.append('<option value="">Error loading cities</option>');
+                });
+            } else {
+                citySelect.empty();
+                citySelect.append('<option value="">Select State First</option>');
+            }
+        }
 
-                    const rateTier = rates[deliveryType];
-                    
-                    if (!rateTier) {
-                         alert(`Rate tier '${deliveryType}' is not defined in the frontend rates.`);
-                         return;
-                    }
-                    
-                    // 2. CALCULATE DISTANCE (MUST MATCH SERVER LOGIC)
-                    let distanceKm;
-                    
-                    if (pickupStateId === deliveryStateId) {
-                        distanceKm = 50.0; // Intra-state assumption (50km)
-                    } else {
-                        distanceKm = 450.0; // Inter-state assumption (450km)
-                    }
-                    
-                    // 3. FINAL CALCULATION
-                    
-                    const baseCharge = rateTier.base;
-                    const distanceCharge = distanceKm * rateTier.distMult;
-                    const weightCharge = weight * rateTier.perKg;
-
-                    let finalAmount = baseCharge + distanceCharge + weightCharge;
-                    finalAmount = finalAmount.toFixed(2); // Match Python's round(..., 2)
-
-                    // Update the form's hidden fields
-                    $('#distance_km').val(distanceKm.toFixed(2));
-                    $('#calculated_amount').val(finalAmount);
-
-                    // Update the display area
-                    $('#finalRate').text('₦' + parseFloat(finalAmount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-                    $('#finalDistance').text(distanceKm.toFixed(0));
-                    $('#rateDisplay').slideDown();
-
-                } else {
-                    alert('Please ensure weight, cities, and delivery type are selected to calculate the rate.');
-                }
-            });
-            // --- End Rate Calculation Logic ---
+        // Event handlers for state changes
+        $('#pickup_state').change(function() {
+            loadCities('#pickup_state', '#pickup_city');
         });
-    </script>
-    
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-</body>
+        $('#delivery_state').change(function() {
+            loadCities('#delivery_state', '#delivery_city');
+        });
+        
+        // --- Rate Calculation Placeholder Logic ---
+    // --- Rate Calculation Logic (Must match server) ---
+    $('#calculateBtn').click(function() {
+            const weight = parseFloat($('#package_weight').val());
+            const pickupCityId = $('#pickup_city').val();
+            const deliveryCityId = $('#delivery_city').val();
+            const deliveryType = $('#delivery_type').val();
+            
+            // Get State IDs (Needed to check inter/intra state)
+            const pickupStateId = $('#pickup_state').val();
+            const deliveryStateId = $('#delivery_state').val();
 
-</html>
+            if (weight > 0 && pickupCityId && deliveryCityId && deliveryType) {
+                
+                // 1. DEFINE RATES (MUST MATCH DATABASE SHIPPINGRATE TABLE EXACTLY)
+                const rates = {
+                    // REPLACE THESE VALUES WITH YOUR REAL DATABASE VALUES
+                    'bike': {base: 1500.00, perKg: 50.00, distMult: 1.00},
+                    'van': {base: 3500.00, perKg: 150.00, distMult: 2.50},
+                    'bus': {base: 6000.00, perKg: 250.00, distMult: 4.00},
+                    // Add any other rate tiers you support (e.g., 'truck')
+                };
+
+                const rateTier = rates[deliveryType];
+                
+                if (!rateTier) {
+                     alert(`Rate tier '${deliveryType}' is not defined in the frontend rates.`);
+                     return;
+                }
+                
+                // 2. CALCULATE DISTANCE (MUST MATCH SERVER LOGIC)
+                let distanceKm;
+                
+                if (pickupStateId === deliveryStateId) {
+                    distanceKm = 50.0; // Intra-state assumption (50km)
+                } else {
+                    distanceKm = 450.0; // Inter-state assumption (450km)
+                }
+                
+                // 3. FINAL CALCULATION
+                
+                const baseCharge = rateTier.base;
+                const distanceCharge = distanceKm * rateTier.distMult;
+                const weightCharge = weight * rateTier.perKg;
+
+                let finalAmount = baseCharge + distanceCharge + weightCharge;
+                finalAmount = finalAmount.toFixed(2); // Match Python's round(..., 2)
+
+                // Update the form's hidden fields
+                $('#distance_km').val(distanceKm.toFixed(2));
+                $('#calculated_amount').val(finalAmount);
+
+                // Update the display area
+                $('#finalRate').text('₦' + parseFloat(finalAmount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                $('#finalDistance').text(distanceKm.toFixed(0));
+                $('#rateDisplay').slideDown();
+
+            } else {
+                alert('Please ensure weight, cities, and delivery type are selected to calculate the rate.');
+            }
+        });
+        // --- End Rate Calculation Logic ---
+    });
+</script>
+{%endblock%}
+   

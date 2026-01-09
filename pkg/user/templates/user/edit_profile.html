@@ -1,0 +1,96 @@
+{% extends "user/dashboard.html" %}
+
+{% block content %}
+
+<div class="container py-5">
+
+
+    <div class="row justify-content-center">
+        
+        <div class="col-lg-6 col-md-8">
+            <div class="text-center">
+                <a href="{{ url_for('bpuser.dashboard') }}" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    
+
+                    <!-- Title -->
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold">
+                            <i class="fa fa-user-edit text-primary me-2"></i>
+                            Update Your Profile
+                        </h4>
+                        <p class="text-muted mb-0">
+                            Keep your information up to date
+                        </p>
+                    </div>
+                        <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} text-center">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+                    <!-- Form -->
+                    <form action="{{ url_for('bpuser.update_profile') }}" method="post">
+                        {{ proform.csrf_token }}
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            {{ proform.fullname.label(class_='form-label fw-semibold') }}
+                            {{ proform.fullname(
+                                class_='form-control',
+                                value=udeets.full_name,
+                                placeholder='Enter your full name'
+                            ) }}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ proform.email.label(class_='form-label fw-semibold') }}
+                            {{ proform.email(
+                                class_='form-control',
+                                value=udeets.email,
+                                placeholder='Enter your email address'
+                            ) }}
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-4">
+                            {{ proform.phone.label(class_='form-label fw-semibold') }}
+                            {{ proform.phone(
+                                class_='form-control',
+                                value=udeets.phone,
+                                placeholder='Enter your phone number'
+                            ) }}
+                            {% for error in proform.phone.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            {{ proform.submit(
+                                class_='btn btn-primary w-100 rounded-pill'
+                            ) }}
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

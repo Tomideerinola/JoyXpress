@@ -2,53 +2,143 @@
 
 {% block content %}
 <div class="container py-5">
-    <div class="card shadow-sm">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h3 class="fw-bold">
+            <i class="fa fa-box-open text-primary me-2"></i>
+            Shipment Tracking
+        </h3>
+        <p class="text-muted mb-0">
+            Tracking ID: <strong>{{ shipment.tracking_number }}</strong>
+        </p>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <h5 class="mb-4">
+                <i class="fa fa-route text-success me-2"></i>
+                Shipment Status
+            </h5>
+
+            <div class="row text-center">
+
+                <!-- Pending -->
+                <div class="col">
+                    <i class="fa fa-clock fa-2x 
+                        {% if shipment.status in ['pending','assigned','enroute','delivered'] %}text-success{% else %}text-muted{% endif %}">
+                    </i>
+                    <p class="mt-2 mb-0 fw-semibold">Pending</p>
+                </div>
+
+                <!-- Assigned -->
+                <div class="col">
+                    <i class="fa fa-user-check fa-2x 
+                        {% if shipment.status in ['assigned','enroute','delivered'] %}text-success{% else %}text-muted{% endif %}">
+                    </i>
+                    <p class="mt-2 mb-0 fw-semibold">Assigned</p>
+                </div>
+
+                <!-- En Route -->
+                <div class="col">
+                    <i class="fa fa-truck fa-2x 
+                        {% if shipment.status in ['enroute','delivered'] %}text-success{% else %}text-muted{% endif %}">
+                    </i>
+                    <p class="mt-2 mb-0 fw-semibold">En Route</p>
+                </div>
+
+                <!-- Delivered -->
+                <div class="col">
+                    <i class="fa fa-check-circle fa-2x 
+                        {% if shipment.status == 'delivered' %}text-success{% else %}text-muted{% endif %}">
+                    </i>
+                    <p class="mt-2 mb-0 fw-semibold">Delivered</p>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-4">
+                <span class="badge px-4 py-2 fs-6
+                    {% if shipment.status == 'pending' %}bg-warning
+                    {% elif shipment.status == 'assigned' %}bg-info
+                    {% elif shipment.status == 'enroute' %}bg-primary
+                    {% elif shipment.status == 'delivered' %}bg-success
+                    {% else %}bg-secondary{% endif %}">
+                    {{ shipment.status|capitalize }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Addresses -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary">
+                        <i class="fa fa-map-marker-alt me-2"></i>Pickup Location
+                    </h6>
+                    <p class="mb-1">{{ shipment.pickup_address }}</p>
+                    <small class="text-muted">
+                        {{ shipment.pickup_city }}, {{ shipment.pickup_state }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold text-success">
+                        <i class="fa fa-home me-2"></i>Delivery Location
+                    </h6>
+                    <p class="mb-1">{{ shipment.delivery_address }}</p>
+                    <small class="text-muted">
+                        {{ shipment.delivery_city }}, {{ shipment.delivery_state }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package & Payment -->
+    <div class="card shadow-sm border-0">
         <div class="card-body">
 
-            <h4 class="mb-3">Shipment Details</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="fw-bold">
+                        <i class="fa fa-box me-2 text-info"></i>Package Details
+                    </h6>
+                    <p class="mb-1"><strong>Weight:</strong> {{ shipment.package_weight }} kg</p>
+                    <p class="mb-1"><strong>Delivery Type:</strong> {{ shipment.delivery_type|capitalize }}</p>
+                    <p class="mb-0"><strong>Distance:</strong> {{ shipment.distance_km }} km</p>
+                </div>
 
-            <p><strong>Tracking Number:</strong> {{ shipment.tracking_number }}</p>
-            <p><strong>Status:</strong>
-                <span class="badge bg-info text-dark">{{ shipment.status|capitalize }}</span>
-            </p>
+                <div class="col-md-6 text-md-end">
+                    <h6 class="fw-bold">
+                        <i class="fa fa-credit-card me-2 text-success"></i>Payment
+                    </h6>
+                    <h4 class="fw-bold text-success">
+                        ₦{{ "{:,.2f}".format(shipment.calculated_amount) }}
+                    </h4>
 
-            <hr>
-
-            <h5>Sender → Receiver</h5>
-            <p>
-                <strong>Pickup:</strong>
-                {{ shipment.pickup_address }},
-                {{ shipment.pickup_city }},
-                {{ shipment.pickup_state }}
-            </p>
-
-            <p>
-                <strong>Delivery:</strong>
-                {{ shipment.delivery_address }},
-                {{ shipment.delivery_city }},
-                {{ shipment.delivery_state }}
-            </p>
-
-            <hr>
-
-            <h5>Package Info</h5>
-            <p><strong>Weight:</strong> {{ shipment.package_weight }} kg</p>
-            <p><strong>Delivery Type:</strong> {{ shipment.delivery_type }}</p>
-            <p><strong>Distance:</strong> {{ shipment.distance_km }} km</p>
-
-            <hr>
-
-            <h5>Payment</h5>
-            <p><strong>Amount:</strong> ₦{{ "{:,.2f}".format(shipment.calculated_amount) }}</p>
-
-            {% if shipment.status == 'pending' %}
-                <a href="{{ url_for('bppayment.initiate_payment', shipment_id=shipment.id) }}"
-                   class="btn btn-primary mt-3">
-                    Proceed to Payment
-                </a>
-            {% endif %}
+                    {% if shipment.status == 'pending' %}
+                        <a href="{{ url_for('bppayment.initiate_payment', shipment_id=shipment.id) }}"
+                           class="btn btn-success btn-lg mt-2">
+                            <i class="fa fa-lock me-2"></i>Proceed to Payment
+                        </a>
+                    {% else %}
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="fa fa-check me-1"></i>Paid
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
 
         </div>
     </div>
+
 </div>
 {% endblock %}

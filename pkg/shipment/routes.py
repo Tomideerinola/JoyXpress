@@ -14,6 +14,8 @@ def new_shipment():
     
     user_id = session.get('useronline')
     u = User.query.get(user_id) if user_id else None
+    shipments = Shipment.query.filter_by(user_id=user_id).order_by(Shipment.created_at.desc()).all()
+
 
     if not u:
         flash('You must be logged in to create a new shipment.', 'warning')
@@ -94,7 +96,7 @@ def new_shipment():
         'shipment/new_shipment.html', 
         form=form, 
         u=u,
-        title='Create New Shipment'
+        title='Create New Shipment',shipments=shipments
     )
 
 
@@ -148,11 +150,14 @@ def confirmation(shipment_id):
 
 @shipmentobj.route('/<int:shipment_id>')
 def shipment_details(shipment_id):
+
     user_id = session.get('useronline')
+
     if not user_id:
         flash("Please log in to view shipment details.", "warning")
         return redirect(url_for('bpuser.login'))
 
+    u = User.query.get(user_id)
     shipment = Shipment.query.get_or_404(shipment_id)
 
     # Security check
@@ -160,8 +165,49 @@ def shipment_details(shipment_id):
         flash("You are not allowed to view this shipment.", "danger")
         return redirect(url_for('bpuser.dashboard'))
 
+    return render_template('shipment/shipment_tracking.html',shipment=shipment,title="Shipment Details",u=u)
+
+@shipmentobj.route('/track/', methods=['GET', 'POST'])
+def track_ship_page():
+    """Renders the shipment tracking page and handles tracking requests."""
+    user_id = session.get('useronline')
+
+    u = User.query.get(user_id)
+
+    
+    tracking_id = request.args.get('tracking_id', '').strip()
+    shipment = None
+
+    if tracking_id:
+        shipment = Shipment.query.filter_by(tracking_number=tracking_id).first()
+        if not shipment:
+            flash(f'No shipment found with Tracking ID: {tracking_id}', 'danger')
+
     return render_template(
-        'shipment/details.html',
+        'shipment/track_shipment.html',
         shipment=shipment,
-        title="Shipment Details"
+        title='Track Shipment',u=u
+    )
+
+
+@shipmentobj.route('/shipments/history')
+def shipment_history():
+    user_id = session.get('useronline')
+
+    if not user_id:
+        flash("Please log in to view your shipment history.", "warning")
+        return redirect(url_for('bpuser.login'))
+
+    # Fetch all shipments for this user
+    shipments = (
+        Shipment.query
+        .filter_by(user_id=user_id)
+        .order_by(Shipment.created_at.desc())
+        .all()
+    )
+
+    return render_template(
+        'shipment/shipment_history.html',
+        shipments=shipments,
+        title="Shipment History"
     )

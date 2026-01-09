@@ -4,15 +4,12 @@
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
+    {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
+            <div class="alert alert-{{ category }} text-center">{{ message }}</div>
         {% endfor %}
-      {% endif %}
-    {% endwith %}
+    {% endif %}
+{% endwith %}
 
     <form method="POST" action="{{ url_for('bpuser.login') }}">
         {{ form.hidden_tag() }}

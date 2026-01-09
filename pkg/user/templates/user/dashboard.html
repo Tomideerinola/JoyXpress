@@ -5,255 +5,405 @@
     <meta charset="utf-8">
     <title>JoyXpress - User Dashboard</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="Logistics User Dashboard" name="keywords">
-    <meta content="User dashboard for managing shipments and account" name="description">
-
-    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
-
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-
-    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-
+    
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    </head>
+
+    <style>
+        /* DASHBOARD SPECIFIC STYLES */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6f9; /* Light grey background for content area */
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar Styling --- */
+        #wrapper {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 250px;
+            margin-left: -250px;
+            background-color: #343a40; /* Dark sidebar */
+            transition: margin .25s ease-out;
+            position: fixed;
+            z-index: 1000;
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.5rem 1.25rem;
+            font-size: 1.5rem;
+            color: white;
+            background-color: #ff6600; /* Your primary orange brand color */
+            font-weight: 700;
+        }
+
+        #sidebar-wrapper .list-group {
+            width: 250px;
+        }
+
+        #page-content-wrapper {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #wrapper.toggled #sidebar-wrapper {
+            margin-left: 0;
+        }
+
+        /* Sidebar Links */
+        .sidebar-link {
+            color: #adb5bd;
+            background-color: #343a40;
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background-color: #3e444a;
+            color: #fff;
+            border-left: 4px solid #ff6600; /* Orange accent on hover */
+            text-decoration: none;
+        }
+
+        .sidebar-link.active {
+            background-color: #2c3034;
+            color: #fff;
+            border-left: 4px solid #ff6600;
+        }
+
+        .sidebar-icon {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #4b545c;
+            margin-bottom: 10px;
+        }
+        .user-avatar-circle {
+            width: 60px;
+            height: 60px;
+            background-color: #ff6600;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+
+        /* --- Main Content Styling --- */
+        .content-header {
+            padding: 20px 30px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            border: none;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .bg-orange-soft { background-color: #fff3e6; color: #ff6600; }
+        .bg-blue-soft { background-color: #e6f7ff; color: #007bff; }
+        .bg-green-soft { background-color: #e6ffed; color: #28a745; }
+
+        .table-custom thead th {
+            border-top: none;
+            border-bottom: 2px solid #f4f6f9;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        .table-custom tbody td {
+            vertical-align: middle;
+            border-top: 1px solid #f4f6f9;
+            padding: 15px 0.75rem;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            #sidebar-wrapper { margin-left: 0; }
+            #page-content-wrapper { margin-left: 250px; width: calc(100% - 250px); }
+            #wrapper.toggled #sidebar-wrapper { margin-left: -250px; }
+            #wrapper.toggled #page-content-wrapper { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
 
 <body>
-    <div class="container-fluid bg-dark">
-        <div class="row py-2 px-lg-5">
-            <div class="col-lg-6 text-center text-lg-left mb-2 mb-lg-0">
-                <div class="d-inline-flex align-items-center text-white">
-                    <small><i class="fa fa-phone-alt mr-2"></i>+234 7039853440</small>
-                    <small class="px-3">|</small>
-                    <small><i class="fa fa-envelope mr-2"></i>tomideerinola@gmail.com</small>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center text-lg-right">
-                <div class="d-inline-flex align-items-center">
-                    <a class="text-white px-2" href=""><i class="fab fa-facebook-f"></i></a>
-                    <a class="text-white px-2" href=""><i class="fab fa-twitter"></i></a>
-                    <a class="text-white px-2" href=""><i class="fab fa-linkedin-in"></i></a>
-                    <a class="text-white px-2" href=""><i class="fab fa-instagram"></i></a>
-                    <a class="text-white pl-2" href=""><i class="fab fa-youtube"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid p-0">
-        <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-lg-5">
-            <a href="{{ url_for('home_page') }}" class="navbar-brand ml-lg-3">
-                <h1 class="m-0 display-5 text-primary"><i class="fa fa-truck mr-2"></i>JoyXpress</h1>
-            </a>
-            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-between px-lg-3" id="navbarCollapse">
-                <div class="navbar-nav m-auto py-0">
-                    <a href="{{ url_for('home_page') }}" class="nav-item nav-link">Home</a>
-                    <a href="about.html" class="nav-item nav-link">About</a>
-                    <a href="service.html" class="nav-item nav-link">Service</a>
-                    <a href="price.html" class="nav-item nav-link">Price</a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
-                        <div class="dropdown-menu rounded-0 m-0">
-                            <a href="blog.html" class="dropdown-item">Blog Grid</a>
-                            <a href="single.html" class="dropdown-item">Blog Detail</a>
-                        </div>
-                    </div>
-                    <a href="contact.html" class="nav-item nav-link">Contact</a>
-                    
-                    {% if session.get('useronline') %}
-                        <a href="{{ url_for('bpuser.dashboard') }}" class="nav-item nav-link active">Dashboard</a>
-                    {% endif %}
-                </div>
-                
-                <div class="d-flex align-items-center">
-                    {% if user_id %}
-                        <div class="nav-item dropdown d-none d-lg-block">
-                            <a href="#" class="btn btn-secondary py-2 px-4 dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-user-circle mr-1"></i> {{ u.full_name|capitalize }}
-                            </a>
-                            <div class="dropdown-menu rounded-0 m-0 dropdown-menu-right">
-                                <a href="{{ url_for('bpuser.dashboard') }}" class="dropdown-item active">Dashboard</a>
-                                <!-- <a href="#" class="dropdown-item">Settings</a> -->
-                                <div class="dropdown-divider"></div>
-                                <a href="{{ url_for('bpuser.logout') }}" class="dropdown-item text-danger">Logout</a>
-                            </div>
-                        </div>
-                        <a href="{{ url_for('bpuser.logout') }}" class="btn btn-danger py-2 px-4 d-lg-none">Logout</a>
-                    {% else %}
-                        <a href="{{ url_for('bpuser.signup') }}" class="btn btn-primary py-2 px-4 d-none d-lg-block mx-2">Register</a>
-                        <a href="{{ url_for('bpuser.login') }}" class="btn btn-primary py-2 px-4 d-none d-lg-block">Login</a>
-                    {% endif %}
-                </div>
-                </div>
-        </nav>
-    </div>
-    <div class="container-fluid py-5">
-        <div class="container">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h1 class="display-4 text-primary">
-                        <i class="fa fa-tachometer-alt mr-2"></i> Dashboard
-                    </h1>
-                    <p class="lead text-muted">Welcome back,{{ u.full_name|capitalize  }}! Manage your shipments here.</p>
-                </div>
+
+    <div class="d-flex" id="wrapper">
+
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fa fa-truck mr-2"></i>JoyXpress
             </div>
             
-            <div class="row pb-3">
-                
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="bg-light p-4 shadow-sm border-left border-primary border-4 rounded h-100">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="text-uppercase text-primary mb-1">Total Shipments</h5>
-                                <h1 class="display-4 font-weight-bold">
-                                    {{ total_shipments }}
-                                </h1>
-                            </div>
-                            <i class="fa fa-box-open fa-3x text-primary"></i>
-                        </div>
-                        <a href="#" class="text-muted small mt-2 d-block">View Shipment History</a>
-                    </div>
+            <div class="sidebar-profile">
+                <div class="user-avatar-circle">
+                    {{ u.full_name[0] | upper }}
                 </div>
-
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="bg-light p-4 shadow-sm border-left border-warning border-4 rounded h-100">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="text-uppercase text-warning mb-1">In Transit / Pending</h5>
-                                <h1 class="display-4 font-weight-bold text-dark">{{ active_shipments }}</h1>
-                            </div>
-                            <i class="fa fa-shipping-fast fa-3x text-warning"></i>
-                        </div>
-                        <a href="#" class="text-muted small mt-2 d-block">Track Latest Packages</a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-12 mb-4">
-                    <div class="bg-light p-4 shadow-sm border-left border-success border-4 rounded h-100">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="text-uppercase text-success mb-1">Account Status</h5>
-                                <h4 class="font-weight-bold text-dark">{{ 'Active' if u.is_active else 'Inactive' }}</h4>
-                                <small class="text-muted">Member Since: {{ u.created_at.strftime('%Y-%m-%d') }}</small>
-                            </div>
-                            <i class="fa fa-check-circle fa-3x text-success"></i>
-                        </div>
-                        <a href="#" class="text-muted small mt-2 d-block">Update Profile</a>
-                    </div>
-                </div>
+                <h6 class="text-white mb-0">{{ u.full_name | title }}</h6>
+                <small class="text-muted">User Account</small>
             </div>
 
-            <div class="row mb-5 justify-content-center">
-                <div class="col-lg-10 col-md-12">
-                    <form method="GET" action="{{ url_for('bpuser.track_shipment') }}">
-                        <div class="mx-auto" style="width: 100%; max-width: 650px;">
-                            <div class="input-group shadow-sm">
-                                <input type="text" name="tracking_id" class="form-control border-light" style="padding: 25px; border-right: none;" placeholder="Enter Shipment Tracking ID" required>
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary px-4"><i class="fa fa-search mr-1"></i> Track & Trace</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            <div class="list-group list-group-flush">
+
+                <a href="{{ url_for('bpuser.dashboard') }}"
+                   class="sidebar-link {% if request.endpoint == 'bpuser.dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt sidebar-icon"></i> Dashboard
+                </a>
+            
+                <a href="{{ url_for('bpshipment.new_shipment') }}"
+                   class="sidebar-link {% if request.endpoint == 'bpshipment.new_shipment' %}active{% endif %}">
+                    <i class="fas fa-plus-circle sidebar-icon"></i> New Shipment
+                </a>
+            
+                <a href="{{ url_for('bpshipment.track_ship_page') }}"
+                   class="sidebar-link {% if request.endpoint in ['bpuser.track_shipment', 'bpshipment.track_ship_page'] %}active{% endif %}">
+                    <i class="fas fa-search-location sidebar-icon"></i> Track Package
+                </a>
+            
+                <a href="{{ url_for('bpuser.edit_profile') }}"
+                   class="sidebar-link {% if request.endpoint == 'bpuser.edit_profile' %}active{% endif %}">
+                    <i class="fas fa-user-cog sidebar-icon"></i> My Profile
+                </a>
+            
+                <a href="{{ url_for('bpshipment.shipment_history') }}"
+                   class="sidebar-link {% if request.endpoint == 'bpuser.shipment_history' %}active{% endif %}">
+                    <i class="fas fa-history sidebar-icon"></i> History
+                </a>
+            
+                <div class="dropdown-divider border-secondary mx-3"></div>
+            
+                <a href="{{ url_for('home_page') }}" class="sidebar-link">
+                    <i class="fas fa-home sidebar-icon"></i> Back to Home
+                </a>
+            
+                <a href="{{ url_for('bpuser.logout') }}" class="sidebar-link text-danger">
+                    <i class="fas fa-sign-out-alt sidebar-icon"></i> Logout
+                </a>
+            
             </div>
             
+        </div>
+        <div id="page-content-wrapper">
 
-            <div class="row pt-3">
+            <nav class="navbar navbar-light bg-white border-bottom shadow-sm px-4">
+                <button class="btn btn-outline-primary" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="ml-auto d-flex align-items-center">
+                    <a href="{{ url_for('home_page') }}" class="btn btn-primary mx-2">
+                        <i class="fas fa-home sidebar-icon"></i>Home
+                    </a>
+                    <span class="text-muted mr-3 small d-none d-md-inline">
+                        <i class="far fa-calendar-alt mr-1"></i> {{ u.created_at.strftime('%A, %b %d') }}
+                    </span>
+                    </div>
+            </nav>
+            {%block content%}
+
+            <div class="container-fluid px-4 py-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
                 
-                <div class="col-lg-6 mb-4">
-                    <div class="card shadow border-0 h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0"><i class="fa fa-bolt mr-2"></i> Quick Actions</h4>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="font-weight-bold text-dark">Dashboard Overview</h2>
+                        <p class="text-muted">Welcome back {{u.full_name|capitalize}}! Here is what's happening with your shipments.</p>
+                    </div>
+                </div>
+
+                <div class="row mb-5">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="dashboard-card d-flex align-items-center">
+                            <div class="icon-box bg-blue-soft mr-3">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-muted small text-uppercase mb-1">Total Shipments</h5>
+                                <h2 class="mb-0 font-weight-bold">{{ total_shipments }}</h2>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p class="card-text text-muted">What would you like to do right now?</p>
-                            <a href="{{ url_for('bpshipment.new_shipment') }}" class="btn btn-outline-primary btn-lg btn-block mb-3">
-                                <i class="fa fa-plus-circle mr-2"></i> Create New Shipment
-                            </a>
-                            <a href="#" class="btn btn-outline-secondary btn-lg btn-block mb-3">
-                                <i class="fa fa-search-location mr-2"></i> Track a Package
-                            </a>
-                            <a href="#" class="btn btn-outline-info btn-lg btn-block">
-                                <i class="fa fa-file-invoice-dollar mr-2"></i> View Billing
-                            </a>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="dashboard-card d-flex align-items-center">
+                            <div class="icon-box bg-orange-soft mr-3">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-muted small text-uppercase mb-1">In Transit / Pending</h5>
+                                <h2 class="mb-0 font-weight-bold">{{ active_shipments }}</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="dashboard-card d-flex align-items-center">
+                            <div class="icon-box bg-green-soft mr-3">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-muted small text-uppercase mb-1">Account Status</h5>
+                                <h5 class="mb-0 font-weight-bold text-success">{{ 'Active' if u.is_active else 'Inactive' }}</h5>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-6 mb-4">
-                    <div class="card shadow border-0 h-100">
-                        <div class="card-header bg-secondary text-white">
-                            <h4 class="mb-0"><i class="fa fa-list mr-2"></i> Latest Shipments</h4>
+                <div class="row mb-5">
+                    <div class="col-lg-8">
+                        <div class="dashboard-card p-0 overflow-hidden">
+                            <div class="p-4 border-bottom">
+                                <h5 class="mb-0 font-weight-bold">Quick Track</h5>
+                            </div>
+                            <div class="p-4 bg-light">
+                                <form method="GET" action="{{ url_for('bpuser.track_shipment') }}">
+                                    <div class="input-group input-group-lg">
+                                        <input type="text" name="tracking_id" class="form-control border-0 shadow-sm" placeholder="Enter Tracking Number (e.g. JX-12345)" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary px-4 font-weight-bold" type="submit">Track</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for s in shipments[:5] %}
-<tr>
-    <td>{{ s.tracking_number }}</td>
-    <td>{{ s.created_at.strftime('%Y-%m-%d') }}</td>
-    <td>
-        {% if s.status == 'Delivered' %}
-            <span class="badge badge-success">Delivered</span>
-        {% elif s.status == 'In Transit' %}
-            <span class="badge badge-warning">In Transit</span>
-        {% else %}
-            <span class="badge badge-secondary">{{ s.status }}</span>
-        {% endif %}
-    </td>
-    <td>
-        <a href="{{url_for('bpshipment.shipment_details', shipment_id=s.id)}}"
-           class="btn btn-sm btn-outline-primary">
-            Details
-        </a>
-    </td>
-</tr>
-{% else %}
-<tr>
-    <td colspan="4" class="text-center text-muted">
-        No shipments found. Start a new one!
-    </td>
-</tr>
-{% endfor %}
-                                </tbody>
-                            </table>
+                    </div>
+                    <div class="col-lg-4 mt-4 mt-lg-0">
+                         <div class="dashboard-card bg-primary text-white text-center" style="background: linear-gradient(45deg, #007bff, #0056b3);">
+                             <h5 class="mb-3">Ready to ship?</h5>
+                             <p class="small mb-4 text-white-50">Create a new order instantly and get it moving.</p>
+                             <a href="{{ url_for('bpshipment.new_shipment') }}" class="btn btn-light btn-block font-weight-bold text-primary shadow-sm">
+                                 <i class="fas fa-plus mr-2"></i> Create Shipment
+                             </a>
+                         </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="dashboard-card">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0 font-weight-bold">Recent Activity</h5>
+                                <a href="{{ url_for('bpshipment.shipment_history') }}"
+                                class="btn btn-sm btn-outline-warning">
+                                    View All
+                                </a>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tracking ID</th>
+                                            <th>Date Created</th>
+                                            <th>Destination</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s in shipments[:5] %}
+                                        <tr>
+                                            <td class="font-weight-bold text-primary">#{{ s.tracking_number }}</td>
+                                            <td>{{ s.created_at.strftime('%b %d, %Y') }}</td>
+                                            <td>{{ s.delivery_city }}</td>
+                                            <td>
+                                                {% if s.status|lower == 'delivered' %}
+                                                    <span class="badge badge-success px-3 py-2 rounded-pill">Delivered</span>
+                                                {% elif s.status|lower == 'pending' %}
+                                                    <span class="badge badge-secondary px-3 py-2 rounded-pill">Pending</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning px-3 py-2 rounded-pill text-white">{{ s.status|capitalize }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('bpshipment.shipment_details', shipment_id=s.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-5 text-muted">
+                                                <i class="fas fa-box-open fa-3x mb-3 text-light-gray"></i><br>
+                                                No shipments found yet.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
-
+            {%endblock%}
         </div>
     </div>
-    <div class="container-fluid bg-dark text-white border-top py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-        </div>
-    <a href="#" class="btn btn-lg btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
-
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-
-    <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/counterup/counterup.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='mail/jqBootstrapValidation.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='mail/contact.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
+    <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+        
+        </script>
+    {%block script%}
+    {%endblock%}
 </body>
-
 </html>
