@@ -1,0 +1,105 @@
+{% include "includes/header.html" %}
+
+<style>
+    /* Custom Styles for Staff Login */
+    body {
+        background-color: #f0f4f8; /* Light background */
+    }
+    .login-container {
+        padding-top: 80px;
+        padding-bottom: 80px;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .agent-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        border-top: 5px solid #007bff; /* Primary Agent Color */
+        animation: fadeIn 0.8s ease-out;
+    }
+    .agent-card h2 {
+        color: #007bff;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .agent-card .form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 16px;
+        border: 1px solid #ced4da;
+    }
+    .btn-agent-login {
+        background-color: #007bff;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+    }
+    .btn-agent-login:hover {
+        background-color: #0056b3;
+    }
+    .login-icon {
+        color: #007bff;
+        margin-right: 10px;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container login-container">
+    <div style="max-width: 450px; width: 100%;">
+        <div class="agent-card">
+            <h2 class="text-center">
+                <i class="fas fa-motorcycle login-icon"></i> Staff Login
+            </h2>
+        
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="{{ url_for('bpagent.agent_login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    </div>
+                    <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+                </div>
+                
+                <div class="input-group mb-4">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    </div>
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                </div>
+        
+                <button class="btn btn-agent-login w-100">
+                    <i class="fas fa-sign-in-alt"></i> Login to Tasks
+                </button>
+            </form>
+        </div>
+        <p class="text-center mt-3 text-muted small">
+            This portal is for authorized dispatch and field staff only.
+        </p>
+    </div>
+</div>
+
+{% include "includes/footer.html" %}

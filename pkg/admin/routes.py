@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from pkg.models import db, State, City, ShippingRate,Admin, Agent, User, Shipment,Payment,ShipmentStatusHistory
 from .form import AdminLoginForm
 from .utils import generate_temp_password
+from datetime import datetime
 
 
 NIGERIA_LOCATIONS = {
@@ -127,9 +128,25 @@ def admin_logout():
 
 @adminobj.route('/shipments')
 def view_all_shipments():
-    status_filter = request.args.get('status')  # optional filter e.g., pending
-    shipments = []  # Replace with Shipment.query.all() or filtered
-    return render_template('shipments.html', title="Shipments", shipments=shipments, status_filter=status_filter)
+    # Get optional status filter from query params
+    status_filter = request.args.get('status') 
+
+    # Base query
+    query = Shipment.query.order_by(Shipment.created_at.desc())
+
+    # Apply filter if provided
+    if status_filter:
+        query = query.filter_by(status=status_filter.lower())
+
+    shipments = query.all()
+
+    return render_template(
+        'admin/all_shipments.html',
+        title="All Shipments",
+        shipments=shipments,
+        status_filter=status_filter
+    )
+
 
 
 # ASSIGN AGENTS (placeholder)
@@ -145,21 +162,36 @@ def assign_agents():
         agent = Agent.query.get_or_404(agent_id)
 
         shipment.agent_id = agent.id
-        shipment.status = "in_transit"
+        shipment.status = "assigned"
+        shipment.assignment_date = datetime.now()
         db.session.commit()
 
         flash(f"Assigned {agent.full_name} to shipment {shipment.tracking_number}", "success")
-        return redirect(url_for("adminobj.assign_agents"))
+        return redirect(url_for("bpadmin.assign_agents"))
 
     # GET request
     shipments = Shipment.query.order_by(Shipment.created_at.desc()).all()
     agents = Agent.query.filter_by(is_active=True).all()
 
     return render_template(
-        "assign_agents.html",
+        "admin/assign_agents.html",
         shipments=shipments,
         agents=agents
     )
+
+@adminobj.route('/unassign-agent/<int:shipment_id>/')
+def unassign_agent(shipment_id):
+    shipment = Shipment.query.get_or_404(shipment_id)
+    shipment.agent_id = None
+    shipment.status = "pending"
+    db.session.commit()
+    flash(f"Unassigned agent from shipment {shipment.tracking_number}", "info")
+    return redirect(url_for("bpadmin.assign_agents"))
+
+
+
+
+
 
 # USER MANAGEMENT
 
@@ -183,11 +215,27 @@ def delete_user(user_id):
 
 
 # SYSTEM STATUS TYPES
-
-@adminobj.route('/system-statuses')
+@adminobj.route('/system/statuses', methods=['GET', 'POST'])
 def system_statuses():
-    statuses = ["Pending", "In Transit", "Delivered", "Cancelled"]
-    return render_template('system_statuses.html', title="Status Types", statuses=statuses)
+    # Example: manage statuses in the database (you can also hard-code initially)
+    if request.method == "POST":
+        # Handle adding a new status
+        new_status = request.form.get('status_name', '').strip()
+        if new_status:
+            # Check if already exists
+            if StatusType.query.filter_by(name=new_status).first():
+                flash("Status already exists.", "warning")
+            else:
+                st = StatusType(name=new_status)
+                db.session.add(st)
+                db.session.commit()
+                flash("Status added successfully.", "success")
+        return redirect(url_for('bpadmin.system_statuses'))
+
+    # GET: show all statuses
+    statuses = StatusType.query.order_by(StatusType.name).all()
+    return render_template('admin/system_statuses.html', statuses=statuses)
+
 
 @adminobj.route('/delivery-zones')
 def delivery_zones():

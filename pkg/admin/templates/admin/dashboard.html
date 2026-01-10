@@ -117,7 +117,7 @@
                 <a href="{{ url_for('bpadmin.view_all_shipments') }}?status=pending" class="sidebar-link">
                     <i class="fas fa-clock mr-3"></i> Pending Orders
                 </a>
-                <a href="#" class="sidebar-link">
+                <a href="{{ url_for('bpadmin.assign_agents') }}" class="sidebar-link">
                     <i class="fas fa-truck-loading mr-3"></i> Assign Agents
                 </a>
                 
@@ -130,19 +130,9 @@
                 <a href="{{ url_for('bpadmin.manage_users') }}" class="sidebar-link">
                     <i class="fas fa-user-friends mr-3"></i> Manage Users
                 </a>
-
-                <h6 class="text-white-50 small mt-3 mb-0 mx-4">SYSTEM</h6>
-                
-                <a href="{{ url_for('bpadmin.system_statuses') }}" class="sidebar-link">
-                    <i class="fas fa-list-alt mr-3"></i> Status Types
-                </a>
-                <a href="#" class="sidebar-link">
-                    <i class="fas fa-map-marked-alt mr-3"></i> Delivery Zones
-                </a>
-                
                 <div class="dropdown-divider border-secondary mx-3 my-2"></div>
                 
-                <a href="{{ url_for('bpuser.logout') }}" class="sidebar-link text-danger">
+                <a href="{{ url_for('bpadmin.admin_logout') }}" class="sidebar-link text-danger">
                     <i class="fas fa-sign-out-alt mr-3"></i> Logout
                 </a>
             </div>

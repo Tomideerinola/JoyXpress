@@ -79,6 +79,7 @@ class Shipment(db.Model):
     delivery_address = db.Column(db.Text, nullable=False)
     delivery_city = db.Column(db.String(100), nullable=False)
     delivery_state = db.Column(db.String(100), nullable=False)
+    assignment_date = db.Column(db.DateTime, nullable=True)
 
     package_weight = db.Column(db.Float, nullable=False)  # kg
     delivery_type = db.Column(db.String(50), nullable=False)  # bike, bus

@@ -1,0 +1,173 @@
+{% extends "admin/dashboard.html" %}
+
+{% block title %}Assign Agents{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+    /* Specific styles for the table */
+    .table .thead-dark th {
+        background-color: #343a40;
+        color: white;
+        font-weight: 600;
+        border-bottom: 0;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f0f3f6;
+    }
+    .form-select-sm {
+        /* Bootstrap 4 adjustment for smaller select */
+        height: calc(1.8rem + 2px); 
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+        padding-left: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .btn-sm {
+        /* Ensure buttons match select height */
+        padding: 0.25rem 0.5rem;
+    }
+    .badge {
+        font-size: 85%;
+        padding: 0.4em 0.7em;
+        font-weight: 600;
+    }
+    /* Custom Badge Colors for clarity */
+    .bg-secondary { background-color: #6c757d !important; color: white !important; } /* Pending */
+    .bg-warning { background-color: #ffc107 !important; } /* In Transit */
+    .bg-success { background-color: #28a745 !important; color: white !important; } /* Delivered */
+    .bg-info { background-color: #17a2b8 !important; color: white !important; } /* Others */
+</style>
+{% endblock %}
+
+{% block page_content_title %}
+    <h1 class="font-weight-bold mb-4 text-dark">
+        <i class="fas fa-people-carry text-danger mr-2"></i> Agent Assignment
+    </h1>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <div class="d-flex align-items-center mb-4">
+        <h3 class="mb-0">Agent Assignment</h3>
+    </div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-lg-12">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show text-center">
+                            {{ msg }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="thead-dark text-center">
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 15%;">Tracking ID</th>
+                            <th style="width: 25%;">Destination</th>
+                            <th style="width: 15%;">Status</th>
+                            <th style="width: 30%;">Agent Assignment</th>
+                            <th style="width: 10%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shipment in shipments %}
+                        <tr class="text-center">
+                            <td>{{ loop.index }}</td>
+                            <td class="font-weight-bold">{{ shipment.tracking_number }}</td>
+                            <td>{{ shipment.delivery_city }}, {{ shipment.delivery_state }}</td>
+                            <td>
+                                {% set status = shipment.status|lower %}
+                                {% if status == 'pending' %}
+                                    <span class="badge badge-status badge-pending">Pending</span>
+                                {% elif status == 'assigned' %}
+                                    <span class="badge badge-status badge-assigned">Assigned</span>
+                                {% elif status == 'picked_up' %}
+                                    <span class="badge badge-status badge-picked">Picked Up</span>
+                                {% elif status == 'delivered' %}
+                                    <span class="badge badge-status badge-delivered">Delivered</span>
+                                {% else %}
+                                    <span class="badge badge-status bg-info">{{ status|replace('_',' ')|title }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if shipment.agent %}
+                                    <p class="text-success mb-0 font-weight-bold">
+                                        <i class="fas fa-check-circle mr-1"></i> {{ shipment.agent.full_name }}
+                                    </p>
+                                    <small class="text-muted">Assigned: {{ shipment.assignment_date|default("N/A", true) }}</small>
+                                {% else %}
+                                    <form method="POST" action="{{ url_for('bpadmin.assign_agents') }}" class="d-flex justify-content-center">
+                                        <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
+                                        <input type="hidden" name="action" value="assign">
+                                        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                        
+                                        <select name="agent_id" class="form-select form-select-sm me-2" required>
+                                            <option value="">Select Agent...</option>
+                                            {% for agent in agents %}
+                                                <option value="{{ agent.id }}">
+                                                    {{ agent.full_name }} ({{ agent.city|default("N/A", true) }},{{ agent.state|default("N/A", true) }}  )
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-share-square"></i> Assign
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                {% if shipment.agent %}
+                                    <a href="{{ url_for('bpadmin.unassign_agent', shipment_id=shipment.id) }}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Are you sure you want to UNASSIGN this agent?');"
+                                       title="Remove agent from this shipment">
+                                        <i class="fas fa-undo"></i> Unassign
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                                        <i class="fas fa-list-alt"></i> View
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-exclamation-triangle mr-2"></i> No shipments currently awaiting assignment.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block footer_scripts %}
+{{ super() }}
+<script>
+    // This script block is only necessary if you had custom JS (like form submission hooks or dynamic filtering)
+    // For this simple table-based assignment, no additional script is strictly needed beyond what's in admin/dashboard.html
+</script>
+{% endblock %}

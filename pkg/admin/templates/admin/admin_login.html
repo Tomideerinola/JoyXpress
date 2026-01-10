@@ -1,57 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+{% include "includes/header.html" %}
 
-    <!-- Google Web Fonts (external stays the same) -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome (external stays the same) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Libraries Stylesheet -->
-    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+<style>
+    /* Custom Styles for Admin Login */
+    body {
+        background-color: #e9ecef; /* Slightly darker background to contrast with card */
+    }
+    .login-container {
+        padding-top: 80px;
+        padding-bottom: 80px;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .admin-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 40px;
+        border-top: 5px solid #dc3545; /* Admin Danger/Red color */
+        animation: slideInUp 0.8s ease-out;
+    }
+    .admin-card h2 {
+        color: #dc3545;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .admin-card .form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 16px;
+    }
+    .btn-admin-login {
+        background-color: #dc3545;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+        border: none;
+    }
+    .btn-admin-login:hover {
+        background-color: #c82333;
+    }
+    .home-link {
+        color: #007bff;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+    .home-link:hover {
+        color: #0056b3;
+        text-decoration: none;
+    }
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 
-</head>
-<body>
-    <!-- {{ url_for('bpadmin.admin_login') }} -->
-    <div class="container">
-        <div class="row">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} text-center">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-            <div class="col-md-10 offset-md-1">
-                <div class="d-flex justify-content-between">
-                    <h2 class="text-center"> JoyXpress Admin Login</h2>
-                    <a href="{{url_for(('home_page'))}}">Home Page</a>
-                </div>
-                <form action="" method="post">
-                    {{adminloginform.csrf_token}}
-                    <div class="mb-3">
-                        {{adminloginform.username.label}}
-                        {{adminloginform.username(class_='form-control border-dark')}}
-                    </div>
-                    <div class="mb-3">
-                        {{adminloginform.password.label}}
-                        {{adminloginform.password(class_='form-control border-dark')}}
-                    </div>
-                    <div>
-                        {{adminloginform.submit(class_='btn btn-warning col-12')}}
-                    </div>
-                </form>
+<div class="container login-container">
+    <div style="max-width: 500px; width: 100%;">
+        <div class="admin-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-user-shield"></i> JoyXpress Admin Login
+                </h2>
+                <a href="{{ url_for('home_page') }}" class="home-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
             </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form action="" method="post">
+                {{ adminloginform.csrf_token }}
+                
+                <div class="mb-3">
+                    {{ adminloginform.username.label(class_='form-label font-weight-bold') }}
+                    {{ adminloginform.username(class_='form-control border-dark', placeholder='Enter Admin Username') }}
+                </div>
+                
+                <div class="mb-4">
+                    {{ adminloginform.password.label(class_='form-label font-weight-bold') }}
+                    {{ adminloginform.password(class_='form-control border-dark', placeholder='Enter Password') }}
+                </div>
+                
+                <div>
+                    <button type="submit" class="btn btn-admin-login w-100">
+                        <i class="fas fa-lock"></i> Secure Login
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+{% include "includes/footer.html" %}

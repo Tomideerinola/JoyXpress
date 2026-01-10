@@ -1,0 +1,95 @@
+{% extends "admin/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4 justify-content-between">
+        <h3 class="mb-0">All Shipments</h3>
+        <div>
+            <a href="{{ url_for('bpadmin.assign_agents') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-user-plus me-1"></i> Assign Agents
+            </a>
+        </div>
+    </div>
+
+    <!-- Status filter -->
+    <div class="mb-3">
+        <a href="{{ url_for('bpadmin.view_all_shipments') }}" class="btn btn-outline-secondary btn-sm {% if not status_filter %}active{% endif %}">All</a>
+        <a href="{{ url_for('bpadmin.view_all_shipments', status='pending') }}" class="btn btn-outline-warning btn-sm {% if status_filter=='pending' %}active{% endif %}">Pending</a>
+        <a href="{{ url_for('bpadmin.view_all_shipments', status='in_transit') }}" class="btn btn-outline-info btn-sm {% if status_filter=='in_transit' %}active{% endif %}">In Transit</a>
+        <a href="{{ url_for('bpadmin.view_all_shipments', status='delivered') }}" class="btn btn-outline-success btn-sm {% if status_filter=='delivered' %}active{% endif %}">Delivered</a>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-lg-6">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show text-center">
+                            {{ msg }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <!-- Shipments Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th>#</th>
+                            <th>Tracking ID</th>
+                            <th>Destination</th>
+                            <th>Status</th>
+                            <th>Assigned Agent</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shipment in shipments %}
+                        <tr class="text-center">
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold">{{ shipment.tracking_number }}</td>
+                            <td>{{ shipment.delivery_city }}, {{ shipment.delivery_state }}</td>
+                            <td>
+                                {% if shipment.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif shipment.status == 'in_transit' %}
+                                    <span class="badge bg-info text-dark">In Transit</span>
+                                {% elif shipment.status == 'delivered' %}
+                                    <span class="badge bg-success">Delivered</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ shipment.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if shipment.agent %}
+                                    {{ shipment.agent.full_name }}
+                                {% else %}
+                                    <span class="text-muted">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ shipment.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No shipments found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
