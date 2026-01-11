@@ -17,7 +17,7 @@
     <div class="mb-3">
         <a href="{{ url_for('bpadmin.view_all_shipments') }}" class="btn btn-outline-secondary btn-sm {% if not status_filter %}active{% endif %}">All</a>
         <a href="{{ url_for('bpadmin.view_all_shipments', status='pending') }}" class="btn btn-outline-warning btn-sm {% if status_filter=='pending' %}active{% endif %}">Pending</a>
-        <a href="{{ url_for('bpadmin.view_all_shipments', status='in_transit') }}" class="btn btn-outline-info btn-sm {% if status_filter=='in_transit' %}active{% endif %}">In Transit</a>
+        <a href="{{ url_for('bpadmin.view_all_shipments', status='picked up') }}" class="btn btn-outline-info btn-sm {% if status_filter=='in_transit' %}active{% endif %}">In Transit</a>
         <a href="{{ url_for('bpadmin.view_all_shipments', status='delivered') }}" class="btn btn-outline-success btn-sm {% if status_filter=='delivered' %}active{% endif %}">Delivered</a>
     </div>
 
@@ -59,14 +59,21 @@
                             <td class="fw-bold">{{ shipment.tracking_number }}</td>
                             <td>{{ shipment.delivery_city }}, {{ shipment.delivery_state }}</td>
                             <td>
-                                {% if shipment.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">Pending</span>
-                                {% elif shipment.status == 'in_transit' %}
-                                    <span class="badge bg-info text-dark">In Transit</span>
-                                {% elif shipment.status == 'delivered' %}
-                                    <span class="badge bg-success">Delivered</span>
+                                {% set status = shipment.status|lower|replace(' ', '_') %}
+                                {% if status == 'pending' %}
+                                    <span class="badge badge-status badge-pending">Pending</span>
+                                {% elif status == 'paid' %}
+                                    <span class="badge badge-status badge-paid">Paid</span>
+                                {% elif status == 'assigned' %}
+                                    <span class="badge badge-status badge-assigned">Assigned</span>
+                                {% elif status == 'picked_up' %}
+                                    <span class="badge badge-status badge-picked">Picked Up</span>
+                                {% elif status == 'in_transit' %}
+                                    <span class="badge badge-status badge-transit">In Transit</span>
+                                {% elif status == 'delivered' %}
+                                    <span class="badge badge-status badge-delivered">Delivered</span>
                                 {% else %}
-                                    <span class="badge bg-secondary">{{ shipment.status }}</span>
+                                    <span class="badge badge-status badge-other">{{ shipment.status|title }}</span>
                                 {% endif %}
                             </td>
                             <td>

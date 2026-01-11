@@ -152,6 +152,7 @@ def confirmation(shipment_id):
 def shipment_details(shipment_id):
 
     user_id = session.get('useronline')
+    back_url = request.referrer or url_for('bpuser.home')
 
     if not user_id:
         flash("Please log in to view shipment details.", "warning")
@@ -165,7 +166,7 @@ def shipment_details(shipment_id):
         flash("You are not allowed to view this shipment.", "danger")
         return redirect(url_for('bpuser.dashboard'))
 
-    return render_template('shipment/shipment_tracking.html',shipment=shipment,title="Shipment Details",u=u)
+    return render_template('shipment/shipment_tracking.html',shipment=shipment,title="Shipment Details",u=u,back_url=back_url)
 
 @shipmentobj.route('/track/', methods=['GET', 'POST'])
 def track_ship_page():

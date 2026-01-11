@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }} - JoyXpress Tracking</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        body {
+            background: #f5f7fa; /* Light background */
+            min-height: 100vh;
+        }
+        .shipment-container {
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+        .shipment-header {
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .tracking-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        /* Status Timeline Styles */
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+            padding: 0 20px;
+        }
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: #e9ecef;
+            z-index: 0;
+        }
+        .timeline-step {
+            position: relative;
+            z-index: 1;
+            background: white;
+            padding: 0 10px;
+            text-align: center;
+            flex: 1;
+            max-width: 150px;
+        }
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 1.2rem;
+        }
+        .timeline-step.active .step-icon {
+            background: var(--success-gradient);
+            border-color: #28a745;
+            color: white;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        .timeline-step.active p {
+            color: #28a745;
+            font-weight: 700;
+        }
+        .timeline-step p {
+            font-size: 0.85rem;
+            margin: 0;
+            font-weight: 600;
+            color: #6c757d;
+        }
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        /* Info Cards */
+        .info-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            height: 100%;
+            background: white;
+            overflow: hidden;
+            position: relative;
+        }
+        .route-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--info-gradient);
+        }
+        .location-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--info-gradient);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        .metric-card {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .amount-card {
+            background: linear-gradient(135deg, #e6ffe6 0%, #ccffcc 100%);
+            border-left: 4px solid #28a745;
+        }
+        .amount-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #28a745;
+        }
+        .paid-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: 700;
+        }
+        .unpaid-alert {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .payment-status-section {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .status-timeline { flex-wrap: wrap; padding: 0; }
+            .status-timeline::before { display: none; }
+            .timeline-step { max-width: 50%; margin-bottom: 30px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container shipment-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11 col-xl-10">
+                
+                <div class="card shadow-lg border-0 rounded-lg" style="border-radius: 20px; overflow: hidden;">
+                    
+                    <div class="shipment-header">
+                        <i class="fas fa-shipping-fast fa-3x mb-2" style="opacity: 0.9;"></i>
+                        <h2 class="font-weight-bold">JoyXpress Shipment Tracker</h2>
+                        <div class="tracking-badge">
+                            <i class="fas fa-barcode mr-2"></i>
+                            Tracking #{{ shipment.tracking_number }}
+                        </div>
+                        <p class="mb-0 mt-2" style="opacity: 0.85; font-size: 0.9rem;">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            Created on {{ shipment.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+
+                        <div class="status-badge-container text-center mb-4">
+                            <div class="status-badge">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Current Status: {{ shipment.status|replace('_', ' ')|title }}
+                            </div>
+                        </div>
+
+                        {% set status = shipment.status|lower %}
+                        <div class="status-timeline">
+                            <div class="timeline-step {% if status != 'pending' %}active{% endif %}">
+                                <div class="step-icon">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <p>Order<br>Placed</p>
+                            </div>
+                        
+                            <div class="timeline-step {% if status in ['processing', 'transit', 'delivered'] %}active{% endif %}">
+                                <div class="step-icon">
+                                    <i class="fas fa-cog {% if status in ['processing', 'transit'] %}fa-spin{% endif %}"></i>
+                                </div>
+                                <p>Processing</p>
+                            </div>
+                        
+                            <div class="timeline-step {% if status in ['transit', 'delivered'] %}active{% endif %}">
+                                <div class="step-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <p>In<br>Transit</p>
+                            </div>
+                        
+                            <div class="timeline-step {% if status == 'delivered' %}active{% endif %}">
+                                <div class="step-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <p>Delivered</p>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-5" style="border-top: 2px solid #e9ecef;">
+                        
+                        <div class="row g-4">
+                            
+                            <div class="col-lg-6 mb-4">
+                                <div class="info-card route-card p-4">
+                                    <h5 class="font-weight-bold text-primary mb-4"><i class="fas fa-route mr-2"></i> Shipment Route</h5>
+                                    
+                                    <div class="mb-4">
+                                        <div class="location-icon bg-success">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <p class="text-muted mb-1 small">Pickup Location</p>
+                                        <h6 class="mb-0">{{ shipment.pickup_address }}</h6>
+                                        <small class="text-secondary">{{ shipment.pickup_city }}, {{ shipment.pickup_state }}</small>
+                                    </div>
+                                    
+                                    <div class="text-center my-3"><i class="fas fa-arrow-down fa-2x text-muted"></i></div>
+                                    
+                                    <div>
+                                        <div class="location-icon bg-danger">
+                                            <i class="fas fa-flag-checkered"></i>
+                                        </div>
+                                        <p class="text-muted mb-1 small">Delivery Destination</p>
+                                        <h6 class="mb-0">{{ shipment.delivery_address }}</h6>
+                                        <small class="text-secondary">{{ shipment.delivery_city }}, {{ shipment.delivery_state }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 mb-4">
+                                <div class="row h-100">
+                                    
+                                    <div class="col-12 mb-4">
+                                        <h5 class="font-weight-bold text-primary mb-3"><i class="fas fa-box mr-2"></i> Package Details</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="metric-card bg-light p-3">
+                                                    <p class="text-muted small mb-1">Weight</p>
+                                                    <h6 class="font-weight-bold mb-0"><i class="fas fa-weight-hanging mr-1"></i> {{ shipment.package_weight }} kg</h6>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="metric-card bg-light p-3">
+                                                    <p class="text-muted small mb-1">Service Type</p>
+                                                    <h6 class="font-weight-bold mb-0"><i class="fas fa-{{ 'motorcycle' if shipment.delivery_type == 'bike' else 'bus' }} mr-1"></i> {{ shipment.delivery_type|title }}</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="payment-status-section">
+                                            <h5 class="font-weight-bold text-dark mb-4"><i class="fas fa-money-bill-wave mr-2"></i> Financial Summary</h5>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <p class="font-weight-bold mb-0">Shipping Cost:</p>
+                                                <h4 class="amount-value mb-0">
+                                                    ₦{{ "{:,.2f}".format(shipment.calculated_amount) }}
+                                                </h4>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <p class="font-weight-bold mb-0">Payment Status:</p>
+                                                <span class="{% if shipment.status != 'pending' %}paid-badge{% else %}badge badge-warning{% endif %}">
+                                                    {{ 'PAID' if shipment.status != 'pending' else 'UNPAID' }}
+                                                </span>
+                                            </div>
+
+                                            {% if shipment.status == 'pending' %}
+                                            <div class="unpaid-alert mt-4">
+                                                <i class="fas fa-exclamation-triangle mr-2"></i> 
+                                                Payment is required to process this shipment. 
+                                                {% if session.get('useronline') and shipment.user_id == session.get('useronline') %}
+                                                    <a href="{{ url_for('bpshipment.confirmation', shipment_id=shipment.id) }}" class="alert-link font-weight-bold">Click here to pay now.</a>
+                                                {% else %}
+                                                    Please ask the sender to complete the payment.
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mt-4">
+                            <div class="alert alert-light border-left border-primary border-4 p-3 rounded-lg shadow-sm">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-headset fa-2x mr-3 text-primary"></i>
+                                    <div>
+                                        <p class="mb-0 small text-muted">For assistance or detailed tracking history:</p>
+                                        <strong>Call: <a href="tel:+2347039853440" class="text-primary">+234 703 985 3440</a> | Email: <a href="mailto:support@joyxpress.com" class="text-primary">support@joyxpress.com</a></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

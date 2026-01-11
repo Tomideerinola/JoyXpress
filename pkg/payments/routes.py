@@ -111,8 +111,10 @@ def verify_payment():
 
 @paymentobj.route('/success/<int:shipment_id>')
 def payment_success(shipment_id):
-
+    user_id = session.get('useronline')
     shipment = Shipment.query.get_or_404(shipment_id)
+    shipments = Shipment.query.filter_by(user_id=user_id).order_by(Shipment.created_at.desc()).all()
+
 
     if shipment.status != 'paid':
         flash('Unauthorized access.', 'danger')
@@ -120,5 +122,5 @@ def payment_success(shipment_id):
 
     return render_template(
         'payments/success.html',
-        shipment=shipment
+        shipment=shipment,shipments=shipments
     )

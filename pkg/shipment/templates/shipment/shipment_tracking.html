@@ -474,12 +474,46 @@
             display: none;
         }
     }
-    
+    .back-button-bar {
+        /* Position the button bar relative to the main content area */
+        margin-bottom: 15px; /* Space between button and card */
+        margin-left: 20px; /* Align with the card's position */
+    }
+    .btn-professional-back {
+        background-color: transparent;
+        color: #6c757d; /* Muted grey/secondary color */
+        border: 1px solid #ced4da;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        border-radius: 8px; /* Slightly rounded corners */
+        padding: 0.375rem 0.75rem; /* Standard Bootstrap small padding */
+        text-transform: uppercase;
+        font-size: 0.75rem; /* Smaller, cleaner text */
+    }
+    .btn-professional-back:hover {
+        color: #007bff; /* Highlight blue on hover */
+        border-color: #007bff;
+        background-color: #f8f9fa; /* Light background on hover */
+    }
+    /* Ensure the main card and the button align responsively */
+    @media (min-width: 992px) {
+        .back-button-bar {
+            /* Adjust placement for larger screens if necessary to align with the card */
+            margin-left: 0; 
+        }
+    }
 </style>
 
 <div class="container py-5 shipment-container">
     <div class="row justify-content-center">
         <div class="col-lg-11 col-xl-10">
+            
+            
+            <!-- <div class="back-button-bar">
+                <a href="{{ back_url }}" class="btn btn-professional-back">
+                    <i class="fas fa-arrow-left mr-1"></i> Return
+                </a>
+            </div> -->
             
             <div class="card shadow-lg border-0 rounded-lg" style="border-radius: 20px; overflow: hidden;">
                 
@@ -489,7 +523,7 @@
                     <h2 class="font-weight-bold">Shipment Details</h2>
                     <div class="tracking-badge">
                         <i class="fas fa-barcode mr-2"></i>
-                        Tracking #{{ shipment.tracking_number }}
+                        Tracking Number: {{ shipment.tracking_number }}
                     </div>
                     <p class="mb-0 mt-2" style="opacity: 0.85; font-size: 0.9rem;">
                         <i class="far fa-calendar-alt mr-2"></i>
@@ -499,12 +533,10 @@
 
                 <div class="card-body p-4 p-md-4">
 
-                    <!-- Status Timeline -->
                     {% set status = shipment.status|lower %}
                     <div class="status-timeline">
-
-                        <!-- Order Placed -->
-                        <div class="timeline-step {% if status in ['paid', 'processing', 'transit', 'delivered'] %}active{% endif %}">
+                        
+                        <div class="timeline-step {% if status != 'pending' %}active{% endif %}">
                             <div class="step-icon">
                                 <i class="fas fa-file-invoice"></i>
                             </div>
@@ -517,29 +549,28 @@
                             </p>
                         </div>
                     
-                        <!-- Processing -->
-                        <div class="timeline-step {% if status in ['paid', 'processing', 'transit', 'delivered'] %}active{% endif %}">
+                        <div class="timeline-step {% if status in ['paid', 'picked up', 'delivered'] %}active{% endif %}">
                             <div class="step-icon">
-                                <i class="fas fa-cog {% if status in ['paid', 'processing', 'transit'] %}fa-spin{% endif %}"></i>
+                                <i class="fas fa-cog {% if status in ['paid', 'picked up'] %}fa-spin{% endif %}"></i>
                             </div>
                             <p>Processing</p>
                         </div>
                     
-                        <!-- In Transit -->
-                        <div class="timeline-step {% if status in ['transit', 'delivered'] %}active{% endif %}">
+                        <div class="timeline-step {% if status in ['picked up', 'delivered'] %}active{% endif %}">
                             <div class="step-icon">
                                 <i class="fas fa-truck"></i>
                             </div>
                             <p>In<br>Transit</p>
                         </div>
                     
-                        <!-- Delivered -->
                         <div class="timeline-step {% if status == 'delivered' %}active{% endif %}">
                             <div class="step-icon">
                                 <i class="fas fa-check-circle"></i>
                             </div>
                             <p>Delivered</p>
                         </div>
+                    
+                    </div>
                     
                     </div>
                     

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectField, TelField
+from wtforms import StringField, PasswordField, SubmitField, EmailField, SelectField, TelField,TextAreaField, RadioField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from pkg.models import State, City
 
@@ -53,3 +53,13 @@ class ProfileForm(FlaskForm):
     phone = TelField("Phone Number", validators=[DataRequired(), Length(min=5, max=20)])
     email = EmailField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Update Profile')
+
+
+
+class ContactForm(FlaskForm):
+    name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=100)])
+    email = StringField('Email',validators=[DataRequired(), Email()])
+    phone = TelField("Phone Number", validators=[DataRequired(), Length(min=5, max=20)])
+    message= TextAreaField('Message', validators=[DataRequired()])
+    contact_method = RadioField('Preferred Contact Method',choices=[('call', 'Call'), ('text', 'Text')],validators=[DataRequired()])
+    submit = SubmitField('Send Message')
