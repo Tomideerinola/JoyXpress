@@ -1,0 +1,100 @@
+{%extends "admin/dashboard.html"%}
+{%block content%}
+<div class="container container-box mt-5">
+
+  <div class="col-md-12 d-flex justify-content-between">
+    <div class="back-button-bar">
+        <a href="{{ back_url }}" class="btn btn-professional-back">
+            <i class="fas fa-arrow-left mr-1"></i> Return
+        </a>
+    </div>
+
+    <h2 class="mb-4">Customer Contact Requests</h2>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert" style="margin:0;">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle text-center">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Assign Staff</th>
+                            <th>Status</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for q in contact %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ q.name }}</td>
+                            <td>{{ q.email }}</td>
+                            <td>{{ q.phone }}</td>
+                            <td>{{ q.message }}</td>
+                            
+                            <td>{{ q.date_sent.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('bpadmin.admin_contact_assign_staff', request_id=q.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                    {% if q.contact_status == "assigned" %}
+                                    <span class="badge bg-primary text-white">Assigned to {{ q.assigned_staff.full_name }}</span>
+                                    {% elif q.contact_status == "completed" %}
+                                    <span class="badge bg-success text-white">Completed by {{ q.assigned_staff.full_name }}</span>
+                                    {%else%}
+                                    <select name="staff_id" class="form-select form-select-sm">
+                                        <option value="">Select Staff</option>
+                                        {% for staff in all_staff %}
+                                        <option value="{{ staff.id }}" {% if q.assigned_staff_id == staff.id %}selected{% endif %}>
+                                            {{ staff.full_name }} ({{ staff.role }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary mt-1">Assign</button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                            
+                            <td>
+                                {% if q.contact_status == "unassigned" %}
+                                    <span class="badge bg-warning">Unassigned</span>
+                            
+                                {% elif q.contact_status == "assigned" %}
+                                    <span class="badge bg-info text-dark">Assigned</span>
+                            
+                                {% elif q.contact_status == "completed" %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{%endblock%}

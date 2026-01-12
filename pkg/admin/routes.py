@@ -1,7 +1,7 @@
 from flask import render_template,flash,redirect,url_for,request,session
 from pkg.admin import adminobj
 from werkzeug.security import generate_password_hash,check_password_hash
-from pkg.models import db, State, City, ShippingRate,Admin, Agent, User, Shipment,Payment,ShipmentStatusHistory
+from pkg.models import db, State, City, ShippingRate,Admin, Agent, User, Shipment,Payment,ShipmentStatusHistory,ContactUs,Staff
 from .form import AdminLoginForm
 from .utils import generate_temp_password
 from datetime import datetime
@@ -389,3 +389,154 @@ def setup_rates():
     # Redirect to a safe page after setup
     return redirect(url_for('bpshipment.new_shipment'))
 
+
+
+@adminobj.route('/admin/view/contact/')
+def admin_contact_msg():
+    """
+    Fetch all quote requests and send them to the admin_view_quotes.html page.
+    Admin can see:
+    - Customer name, email, phone
+    - Selected service category & subcategory
+    - Message and date submitted
+    """
+    back_url = request.referrer or url_for('bpuser.home')
+    contact = ContactUs.query.order_by(ContactUs.date_sent.desc()).all()
+    all_staff = Staff.query.filter_by(status='active').all()  # only active staff
+    return render_template('admin/view_contact.html', contact=contact,all_staff=all_staff, back_url=back_url)
+
+
+
+@adminobj.route('/admin/contact/assign/staff/<int:request_id>', methods=['POST'])
+def admin_contact_assign_staff(request_id):
+    if 'adminonline' not in session:
+        return redirect(url_for('bpadmin.admin_login'))
+
+    staff_id = request.form.get('staff_id')
+    quote = ContactUs.query.get_or_404(request_id)
+
+    if not staff_id:
+        flash("Please select a staff member.", "danger")
+        return redirect(url_for('bpadmin.admin_view_contact'))
+
+    # Assign staff
+    quote.assigned_staff_id = staff_id
+    quote.contact_status = "assigned"  
+
+    db.session.commit()
+
+    flash(f"Quote no{quote.id} assigned successfully! to {quote.assigned_staff.full_name}!!", "success")
+    return redirect(url_for('bpadmin.admin_contact_msg'))
+
+
+
+
+@adminobj.route('/admin/manage-staff/', methods=['GET', 'POST'])
+# @admin_required
+def admin_manage_staff():
+    """
+    GET: show list of staff and add form
+    POST: handle add-staff form (form_type='add_staff')
+    """
+    back_url = request.referrer or url_for('bpuser.home')
+
+    if request.method == "POST":
+        form_type = request.form.get('form_type')
+        if form_type == 'add_staff':
+            full_name = request.form.get('full_name', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            phone = request.form.get('phone', '').strip()
+            role = request.form.get('role', '').strip()
+            status = request.form.get('status', 'active').strip()
+            password = request.form.get('password', '').strip()
+
+            if not full_name or not email or not role:
+                flash("Name, email and role are required.", "danger")
+                return redirect(url_for('bpadmin.admin_manage_staff'))
+
+            # prevent duplicate email
+            if Staff.query.filter_by(email=email).first():
+                flash("A staff account with that email already exists.", "danger")
+                return redirect(url_for('bpadmin.admin_manage_staff'))
+
+            # if password not provided, generate a temp one
+            generated_pw = None
+            if not password:
+                generated_pw = generate_temp_password(10)
+                password_to_set = generated_pw
+            else:
+                password_to_set = password
+
+            new_staff = Staff(
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                role=role,
+                status=status
+            )
+            new_staff.set_password(password_to_set)
+            db.session.add(new_staff)
+            db.session.commit()
+
+            if generated_pw:
+                flash(f"Staff created. Temporary password: {generated_pw}", "success")
+                # OPTIONAL: send email to staff with the password here
+            else:
+                flash("Staff created successfully.", "success")
+
+            return redirect(url_for('bpadmin.admin_manage_staff'))
+
+    # GET: render page
+    staff_list = Staff.query.order_by(Staff.full_name).all()
+    roles = [
+    'admin',
+    'operations_manager',
+    'dispatch_officer',
+    'customer_support',
+    'customer_care_lead',
+    'finance_officer',
+    'system_support'
+    ]
+    return render_template('admin/manage_staff.html', staff_list=staff_list, roles=roles,back_url=back_url)
+
+
+@adminobj.route('/admin/edit-staff/<int:id>/', methods=['GET', 'POST'])
+def admin_edit_staff(id):
+    staff = Staff.query.get_or_404(id)
+
+    if request.method == "POST":
+        staff.full_name = request.form.get('full_name', staff.full_name).strip()
+        staff.email = request.form.get('email', staff.email).strip().lower()
+        staff.phone = request.form.get('phone', staff.phone).strip()
+        staff.role = request.form.get('role', staff.role).strip()
+        staff.status = request.form.get('status', staff.status).strip()
+
+        # optional: allow admin to set a new password
+        new_password = request.form.get('password', '').strip()
+        if new_password:
+            staff.set_password(new_password)
+
+        db.session.commit()
+        flash("Staff updated successfully.", "success")
+        return redirect(url_for('bpadmin.admin_manage_staff'))
+
+    roles = [
+    'admin',
+    'operations_manager',
+    'dispatch_officer',
+    'customer_support',
+    'customer_care_lead',
+    'finance_officer',
+    'system_support'
+    ]
+    return render_template('admin/edit_staff.html', staff=staff, roles=roles)
+
+# route to delete staff 
+
+@adminobj.route('/admin/delete-staff/<int:id>/')
+def admin_delete_staff(id):
+    staff = Staff.query.get_or_404(id)
+    db.session.delete(staff)
+    db.session.commit()
+    flash("Staff deleted.", "success")
+    return redirect(url_for('bpadmin.admin_manage_staff'))

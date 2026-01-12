@@ -1,0 +1,150 @@
+{%extends "admin/dashboard.html"%}
+{%block content%}
+<div class="container container-box">
+
+    <div class="col-md-12 d-flex justify-content-between">
+        <div class="back-button-bar">
+            <a href="{{ back_url }}" class="btn btn-professional-back">
+                <i class="fas fa-arrow-left mr-1"></i> Return
+            </a>
+        </div>
+    
+        <h2 class="mb-4">Manage Staff</h2>
+      </div>
+
+      <div class="d-flex justify-content-center my-3">
+        <div style="width:100%; max-width:600px;">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, msg in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert" style="margin:0;">
+                  {{ msg }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+
+
+  
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Add Staff</h5>
+          <form method="POST" action="{{ url_for('bpadmin.admin_manage_staff') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="form_type" value="add_staff">
+
+            <div class="mb-2">
+              <input name="full_name" class="form-control" placeholder="Full name" required>
+            </div>
+            <div class="mb-2">
+              <input name="email" type="email" class="form-control" placeholder="Email" required>
+            </div>
+            <div class="mb-2">
+              <input name="phone" class="form-control" placeholder="Phone (optional)">
+            </div>
+
+            <div class="mb-2">
+              <select name="role" class="form-control" required>
+                <option value="">Select role</option>
+                {% for r in roles %}
+                  <option value="{{ r }}">{{ r|capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-2">
+              <select name="status" class="form-control">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div class="mb-2">
+              <input name="password" type="text" class="form-control" placeholder="Password (leave blank to auto-generate)">
+            </div>
+
+            <button class="btn btn-primary btn-sm">Create Staff</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Staff List</h5>
+          <ul class="list-group">
+            {% for s in staff_list %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ s.full_name }}</strong><br>
+                  <small class="text-muted">{{ s.role|capitalize }} • {{ s.email }}</small>
+                </div>
+                <div>
+                  <a href="{{ url_for('bpadmin.admin_edit_staff', id=s.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <a href="{{ url_for('bpadmin.admin_delete_staff', id=s.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this staff?');">Delete</a>
+                </div>
+              </li>
+            {% else %}
+              <li class="list-group-item">No staff yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+  
+
+    <!-- Staff List -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5>Staff List</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered align-middle">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_list %}
+                        <tr class="text-center">
+                            <td>{{ loop.index }}</td>  {# This replaces idx #}
+                            <td>{{ staff.full_name }}</td>
+                            <td>{{ staff.email }}</td>
+                            <td>{{ staff.phone or "-" }}</td>
+                            <td>{{ staff.role|capitalize }}</td>
+                            <td>{{ staff.status|capitalize }}</td>
+                            <td>
+                                <a href="{{ url_for('bpadmin.admin_edit_staff', id=staff.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="{{ url_for('bpadmin.admin_delete_staff', id=staff.id) }}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to delete this staff?');">Delete</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No staff found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%endblock%}

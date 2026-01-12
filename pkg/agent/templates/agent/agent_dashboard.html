@@ -90,7 +90,7 @@
                     {{ agent.full_name[0] | upper }}
                 </div>
                 <h6 class="text-white mb-0">{{ agent.full_name | title }}</h6>
-                <small class="text-white-50">Agent | {{ agent.region | default('Global') }}</small>
+                <small class="text-white-50">Agent | {{ agent.state| default('Global') }}</small>
             </div>
             
             <div class="list-group list-group-flush">

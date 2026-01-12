@@ -33,32 +33,47 @@
                     <h6 class="text-primary text-uppercase font-weight-bold">Contact Us</h6>
                     <h1 class="mb-4">Contact For Any Queries</h1>
                     <div class="contact-form bg-secondary" style="padding: 30px;">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} text-center">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
                         <div id="success"></div>
-                        <form name="sentMessage" id="contactForm" novalidate="novalidate">
-                            <div class="control-group">
-                                <input type="text" class="form-control border-0 p-4" id="name" placeholder="Your Name"
-                                    required="required" data-validation-required-message="Please enter your name" />
-                                <p class="help-block text-danger"></p>
+                        <form method="POST" action="{{ url_for('contact') }}" novalidate>
+                            {{ contact.csrf_token }}
+                        
+                            <div class="mb-3">
+                                {{ contact.name.label }}
+                                {{ contact.name(class="form-control") }}
                             </div>
-                            <div class="control-group">
-                                <input type="email" class="form-control border-0 p-4" id="email" placeholder="Your Email"
-                                    required="required" data-validation-required-message="Please enter your email" />
-                                <p class="help-block text-danger"></p>
+                        
+                            <div class="mb-3">
+                                {{ contact.email.label }}
+                                {{ contact.email(class="form-control") }}
                             </div>
-                            <div class="control-group">
-                                <input type="text" class="form-control border-0 p-4" id="subject" placeholder="Subject"
-                                    required="required" data-validation-required-message="Please enter a subject" />
-                                <p class="help-block text-danger"></p>
+                        
+                            <div class="mb-3">
+                                {{ contact.phone.label }}
+                                {{ contact.phone(class="form-control") }}
                             </div>
-                            <div class="control-group">
-                                <textarea class="form-control border-0 py-3 px-4" rows="3" id="message" placeholder="Message"
-                                    required="required"
-                                    data-validation-required-message="Please enter your message"></textarea>
-                                <p class="help-block text-danger"></p>
+                        
+                            <div class="mb-3">
+                                {{ contact.message.label }}
+                                {{ contact.message(class="form-control") }}
                             </div>
-                            <div>
-                                <button class="btn btn-primary py-3 px-4" type="submit" id="sendMessageButton">Send
-                                    Message</button>
+                        
+                            <label>{{ contact.contact_method.label }}</label><br>
+                            {% for subfield in contact.contact_method %}
+                                <div class="form-check form-check-inline">
+                                    {{ subfield(class="form-check-input") }}
+                                    {{ subfield.label(class="form-check-label") }}
+                                </div>
+                            {% endfor %}
+                        
+                            <div class="mt-3">
+                                {{contact.submit(class='btn btn-primary')}}
                             </div>
                         </form>
                     </div>

@@ -1,6 +1,7 @@
-from flask import render_template,session
+from flask import render_template,session,url_for,request,redirect,flash
 from pkg import app
-from pkg.models import db, User, State, City
+from pkg.models import db, User, State, City,ContactUs
+from pkg.user.form import ContactForm
 
 @app.get('/')
 def home_page():
@@ -24,6 +25,23 @@ def about_page():
 def service():
     return render_template('service.html')
 
-@app.get('/contact/')
+@app.route('/contact/', methods=['GET', 'POST'])
 def contact():
-    return render_template('contact.html')
+    contact= ContactForm()
+
+    if request.method == 'POST':
+        if contact.validate_on_submit():
+            name= contact.name.data
+            email = contact.email.data
+            message= contact.message.data
+            contact_method=contact.contact_method.data
+            phone = contact.phone.data
+
+            co=ContactUs(name=name,email=email,message=message,contact_method=contact_method,phone=phone)
+            db.session.add(co)
+            db.session.commit()
+            flash('Your Message has been received and we will get back to you Shortly', 'success ')
+            return redirect(url_for("contact"))
+        else:
+            flash('Please correct the errors in the form.', 'danger ')
+    return render_template('contact.html',contact=contact)

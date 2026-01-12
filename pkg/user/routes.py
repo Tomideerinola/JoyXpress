@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash,jsonify,session, request
 from pkg.models import User
 from pkg.user import userobj
-from .form import SignupForm,LoginForm,ProfileForm # import the form here
+from .form import SignupForm,LoginForm,ProfileForm,ContactForm # import the form here
 from werkzeug.security import generate_password_hash,check_password_hash
-from pkg.models import db,State,City, Shipment, ShipmentStatusHistory # SQLAlchemy instance
+from pkg.models import db,State,City, Shipment, ShipmentStatusHistory,ContactUs # SQLAlchemy instance
 
 @userobj.app_context_processor
 def inject_user():
@@ -213,3 +213,23 @@ def update_profile():
 
 
             
+@userobj.route('/contact/form/', methods=['GET','POST'])
+def contact_form():
+    contact= ContactForm()
+
+    if request.method == 'POST':
+        if contact.validate_on_submit():
+            name= contact.name.data
+            email = contact.email.data
+            message= contact.message.data
+            contact_method=contact.contact_method.data
+            phone = contact.phone.data
+
+            co=ContactUs(name=name,email=email,message=message,contact_method=contact_method,phone=phone)
+            db.session.add(co)
+            db.session.commit()
+            return redirect(url_for("contact"))
+        else:
+            flash('Please correct the errors in the form.', 'danger ')
+
+    return render_template('contact.html',contact=contact)

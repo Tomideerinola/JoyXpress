@@ -1,0 +1,42 @@
+{%extends "admin/dashboard.html"%}
+{%block content%}
+<div class="container" style="max-width:800px; margin-top:30px;">
+  <h3>Edit Staff</h3>
+
+  <form method="POST" action="{{ url_for('bpadmin.admin_edit_staff', id=staff.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="mb-2">
+      <input name="full_name" class="form-control" value="{{ staff.full_name }}" required>
+    </div>
+    <div class="mb-2">
+      <input name="email" type="email" class="form-control" value="{{ staff.email }}" required>
+    </div>
+    <div class="mb-2">
+      <input name="phone" class="form-control" value="{{ staff.phone }}">
+    </div>
+
+    <div class="mb-2">
+      <select name="role" class="form-control" required>
+        {% for r in roles %}
+          <option value="{{ r }}" {% if r==staff.role %}selected{% endif %}>{{ r|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-2">
+      <select name="status" class="form-control">
+        <option value="active" {% if staff.status=='active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if staff.status=='inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+    </div>
+
+    <div class="mb-2">
+      <input name="password" class="form-control" placeholder="New password (leave blank to keep current)">
+    </div>
+
+    <button class="btn btn-primary">Save changes</button>
+    <a href="{{ url_for('bpadmin.admin_manage_staff') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{%endblock%}

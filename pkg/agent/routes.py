@@ -1,7 +1,7 @@
 from flask import render_template,flash,redirect,url_for,request,session
 from werkzeug.security import generate_password_hash,check_password_hash
 from pkg.agent import agentobj
-from pkg.models import db, State, City, ShippingRate,Agent, User, Shipment,Payment,ShipmentStatusHistory
+from pkg.models import db, State, City, ShippingRate,Agent, User, Shipment,Payment,ShipmentStatusHistory,Staff,ContactUs,QuoteRequest
 from datetime import datetime
 
 from flask_httpauth import HTTPBasicAuth
