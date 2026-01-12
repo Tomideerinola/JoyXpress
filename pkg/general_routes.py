@@ -18,15 +18,21 @@ def landing_page():
 
 @app.get('/about/')
 def about_page():
-    return render_template('about.html')
+    user_id= session.get('useronline')
+
+    return render_template('about.html',user_id=user_id)
 
 
 @app.get('/service/')
 def service():
-    return render_template('service.html')
+    user_id= session.get('useronline')
+
+    return render_template('service.html',user_id=user_id)
 
 @app.route('/contact/', methods=['GET', 'POST'])
 def contact():
+    user_id= session.get('useronline')
+
     contact= ContactForm()
 
     if request.method == 'POST':
@@ -44,4 +50,4 @@ def contact():
             return redirect(url_for("contact"))
         else:
             flash('Please correct the errors in the form.', 'danger ')
-    return render_template('contact.html',contact=contact)
+    return render_template('contact.html',contact=contact,user_id=user_id)

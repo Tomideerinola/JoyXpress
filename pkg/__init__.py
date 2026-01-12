@@ -9,7 +9,7 @@ load_dotenv()
 
 def create_app():
     from pkg import config
-    from pkg.models import db,User,Admin,Agent #we want app to be aware of db 
+    from pkg.models import db,User,Admin,Agent,Staff #we want app to be aware of db 
     #bring in the instances of the Blueprint 
     from pkg.admin import adminobj
     from pkg.user import userobj
@@ -19,6 +19,7 @@ def create_app():
     from pkg.payments import paymentobj
     from pkg.tracking import trackingobj
     from pkg.shipment import shipmentobj
+    from pkg.staff import staffobj
 
      #create the Flask app instance
      #instance_relative_config=True means config file is relative to instance folder
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(paymentobj)
     app.register_blueprint(shipmentobj)
     app.register_blueprint(trackingobj)
+    app.register_blueprint(staffobj)
 
     app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY") # Reads from .env
     app.config['PAYSTACK_SECRET_KEY'] = os.environ.get("PAYSTACK_SECRET_KEY") # Reads from .env
@@ -52,6 +54,7 @@ def create_app():
         user = None
         agent = None
         admin = None
+        staff = None
 
         if session.get('useronline'):
             user = User.query.get(session['useronline'])
@@ -62,10 +65,14 @@ def create_app():
         if session.get('adminonline'):
             admin = Admin.query.get(session['adminonline'])
 
+        if session.get('staffonline'):
+            staff = Staff.query.get(session['staffonline'])
+
         return dict(
             user=user,
             agent=agent,
-            admin=admin
+            admin=admin,
+            staff=staff
         )
     
     return app

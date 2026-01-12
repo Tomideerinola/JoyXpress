@@ -91,7 +91,7 @@
                 </a>
             </div>
             <h2 class="text-center">
-                <i class="fas fa-motorcycle login-icon"></i> Rider Login
+                <i class="fas fa-motorcycle login-icon"></i> Staff Login
             </h2>
         
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -107,7 +107,7 @@
                 {% endif %}
             {% endwith %}
             
-            <form method="POST" action="{{ url_for('bpagent.agent_login') }}">
+            <form method="POST" action="{{ url_for('bpstaff.staff_login') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
                 <div class="input-group mb-3">
@@ -130,7 +130,7 @@
             </form>
         </div>
         <p class="text-center mt-3 text-muted small">
-            This portal is for authorized dispatch and field Riders only.
+            This portal is for authorized staff only.
         </p>
     </div>
 </div>

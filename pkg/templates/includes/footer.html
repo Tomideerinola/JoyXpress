@@ -42,7 +42,8 @@
                         <a class="text-white mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Track Shipment</a>
                         <a class="text-white mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Contact</a>
                         <a class="text-white mb-2" href="{{url_for('bpadmin.admin_login')}}"><i class="fa fa-angle-right mr-2"></i>Admin Login</a>
-                        <a class="text-white mb-2" href="{{url_for('bpagent.agent_login')}}"><i class="fa fa-angle-right mr-2"></i>Agent Login </a>
+                        <a class="text-white mb-2" href="{{url_for('bpagent.agent_login')}}"><i class="fa fa-angle-right mr-2"></i>Rider Login </a>
+                        <a class="text-white mb-2" href="{{ url_for('bpstaff.staff_login') }}"><i class="fa fa-angle-right mr-2"></i>Staff Login </a>
                     </div>
                 </div>
             </div>
@@ -88,7 +89,7 @@
                     <a class="nav-link text-white py-0" href="#">Terms of Service</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white py-0" href="#">Support</a>
+                    <a class="nav-link text-white py-0" href="{{url_for('contact')}}">Support</a>
                 </li>
             </ul>
         </div>

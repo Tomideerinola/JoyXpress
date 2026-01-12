@@ -74,6 +74,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and check_password_hash(user.password_hash, form.password.data):
+            session.clear()
             session["useronline"] = user.id
             flash(f"Welcome back, {user.full_name}!", "success")
             return redirect(url_for('bpuser.dashboard'))  # Your dashboard route
@@ -126,10 +127,8 @@ def logout():
     # 1. Clear the relevant session data
     # Check if the keys exist before trying to pop them
     if 'useronline' in session:
+        session.clear()
         session.pop('useronline')
-        
-    if 'user_full_name' in session:
-        session.pop('user_full_name')
 
     # Optional: Clear the entire session if you have no other data you need to preserve
     # session.clear() 

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ staff.full_name|default('Staff', true) }} Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #0d6efd;
+            --sidebar-bg: #2b3543; /* Darker blue/gray */
+            --sidebar-link: #adb5bd;
+            --sidebar-link-active: #ffffff;
+            --sidebar-hover: #3a4555;
+            --main-bg: #f4f6f9;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar Styling --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-link);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .nav-link {
+            color: var(--sidebar-link);
+            padding: 10px 15px;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: var(--sidebar-link-active);
+            background-color: var(--sidebar-hover);
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+        .sidebar-header h5 {
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+        }
+        .sidebar-header small {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        /* --- Dashboard Specific Styles --- */
+        .dashboard-header {
+            background: linear-gradient(90deg, #ffffff 0%, #f1f3f6 100%);
+            border-bottom: 3px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Card Colors */
+        .kpi-card.pending { background-color: #dc3545; color: white; } /* Danger */
+        .kpi-card.completed { background-color: #198754; color: white; } /* Success */
+        .kpi-card.contact-pending { background-color: #ffc107; color: #343a40; } /* Warning */
+        .kpi-card.contact-resolved { background-color: #6c757d; color: white; } /* Secondary */
+
+        /* Table Styling */
+        .card-shadow {
+            box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+            border-radius: 12px;
+            border: none;
+        }
+        .table thead th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+        .table tbody tr:hover {
+            background-color: #f7f9fc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar d-flex flex-column">
+    <div class="sidebar-header">
+        <h5 class="mb-0">JoyXpress Staff</h5>
+        <p>{{staff.full_name|capitalize}}</p>
+        <small class="text-uppercase">{{ staff.role }}</small>
+    </div>
+    <ul class="nav flex-column flex-grow-1">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{{ url_for('bpstaff.staff_dashboard') }}">
+                <i class="fas fa-home fa-fw me-2"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="fas fa-file-invoice fa-fw me-2"></i> Quote Requests
+                <span class="badge bg-danger rounded-pill float-end">{{ pending_requests_count }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{url_for('bpstaff.view_contact_request')}}">
+                <i class="fas fa-headset fa-fw me-2"></i> Contact Messages
+                <span class="badge bg-warning rounded-pill float-end">{{ contact_pending_requests_count }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="fas fa-user-circle fa-fw me-2"></i> Profile
+            </a>
+        </li>
+    </ul>
+    <div class="p-3 border-top border-secondary">
+        <a href="{{ url_for('bpstaff.staff_logout') }}" class="btn btn-outline-danger w-100 btn-sm">
+            <i class="fas fa-sign-out-alt me-2"></i> Logout
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+
+    {%block content%}
+    
+    <div class="container-fluid">
+        
+        <div class="dashboard-header mb-4">
+            <h1 class="font-weight-bold mb-1">Staff Overview</h1>
+            <p class="welcome-message mb-0">
+                You are assigned as the {{ staff.role }}
+            </p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card kpi-card pending">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ pending_requests_count }}</h4>
+                        <p class="card-text small text-uppercase fw-bold">Pending Quote Requests</p>
+                        <i class="fas fa-file-invoice float-end opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card kpi-card completed">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ completed_requests|length }}</h4>
+                        <p class="card-text small text-uppercase fw-bold">Completed Quotes</p>
+                        <i class="fas fa-check-circle float-end opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card kpi-card contact-pending">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ contact_pending_requests_count }}</h4>
+                        <p class="card-text small text-uppercase fw-bold">Pending Contact Inquiries</p>
+                        <i class="fas fa-headset float-end opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card kpi-card contact-resolved">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ contact_completed_requests|length }}</h4>
+                        <p class="card-text small text-uppercase fw-bold">Resolved Contact Inquiries</p>
+                        <i class="fas fa-envelope-open-text float-end opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            
+            <div class="col-xl-6 d-flex">
+                <div class="card card-shadow flex-fill">
+                    <div class="card-header bg-danger text-white fw-bold">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Urgent: Pending Quotes
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Email</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in pending_requests %}
+                                    <tr>
+                                        <td>{{ req.name|default('N/A', true) }}</td>
+                                        <td>{{ req.email|default('N/A', true) }}</td>
+                                        <td>{{ req.created_at.strftime('%d %b')|default('N/A', true) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('bpstaff.view_quote_request', request_id=req.id) }}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">No urgent quote requests.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-6 d-flex">
+                <div class="card card-shadow flex-fill">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        <i class="fas fa-headset me-2"></i> New Contact Inquiries
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Email / Phone</th> <th>Subject</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contact_req in contact_pending_requests %}
+                                    <tr>
+                                        <td>{{ contact_req.name|default('N/A', true) }}</td>
+                                        <td>
+                                            <small><i class="fas fa-envelope me-1"></i> {{ contact_req.email|default('N/A', true) }}</small><br>
+                                            <small><i class="fas fa-phone me-1"></i> {{ contact_req.phone|default('N/A', true) }}</small>
+                                        </td>
+                                        <td>{{ contact_req.message|truncate(20, True)|default('N/A', true) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('bpstaff.staff_update_contact_request', id=contact_req.id) }}" class="btn btn-sm btn-warning text-dark">
+                                                <i class="fas fa-reply"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">No new contact messages.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <div class="row mt-4">
+            <div class="col-12">
+                <div class="card card-shadow p-3 bg-white text-center">
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-trophy me-2 text-success"></i>
+                        {{ completed_requests|length + contact_completed_requests|length }} tasks resolved this session. Keep up the great work!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {%endblock%}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

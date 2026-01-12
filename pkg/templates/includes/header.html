@@ -35,7 +35,7 @@
         <div class="row py-2 px-lg-5">
             <div class="col-lg-6 text-center text-lg-left mb-2 mb-lg-0">
                 <div class="d-inline-flex align-items-center text-white">
-                    <small><i class="fa fa-phone-alt mr-2"></i>+234 7039853440</small>
+                    <small><i class="fa fa-phone-alt mr-2"></i>+234 703 985 3440</small>
                     <small class="px-3">|</small>
                     <small><i class="fa fa-envelope mr-2"></i>tomideerinola@gmail.com</small>
                 </div>
@@ -87,7 +87,7 @@
                             <a href="{{url_for('bpagent.agent_login')}}" class="dropdown-item">Rider Login</a>
                         </div>
                     </div>
-                    {% if user %}
+                    {% if user_id %}
                     <a href="{{ url_for('bpuser.dashboard') }}" class="nav-item nav-link active">Dashboard</a>
                 {% endif %}
                 </div>
